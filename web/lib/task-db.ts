@@ -1,3 +1,5 @@
+import type { TaskPriority } from "@/lib/planner";
+
 export type TaskCategory = "Studio" | "Lavoro" | "Personale";
 
 export type RitmoTask = {
@@ -11,12 +13,16 @@ export type RitmoTask = {
   isActive: boolean;
   createdAt: number;
   updatedAt: number;
+  plannedDate: string | null;
+  priority: TaskPriority;
+  sortOrder: number;
 };
 
 type TaskRow = {
   id: string; title: string; category: TaskCategory; estimated_pomodoros: number;
   completed_pomodoros: number; completed: boolean; completed_at: number | null;
   is_active: boolean; created_at: number; updated_at: number;
+  planned_date?: string | null; priority?: TaskPriority; sort_order?: number;
 };
 
 export const DB_NAME = "ritmo-local";
@@ -57,6 +63,9 @@ function task(
     isActive,
     createdAt: now + order,
     updatedAt: now + order,
+    plannedDate: null,
+    priority: "Media",
+    sortOrder: order,
   };
 }
 
@@ -98,6 +107,9 @@ export async function readTasks(): Promise<RitmoTask[]> {
     estimatedPomodoros: row.estimated_pomodoros, completedPomodoros: row.completed_pomodoros,
     completed: row.completed, completedAt: row.completed_at, isActive: row.is_active,
     createdAt: row.created_at, updatedAt: row.updated_at,
+    plannedDate: row.planned_date ?? null,
+    priority: row.priority ?? "Media",
+    sortOrder: row.sort_order ?? 0,
   }));
 }
 

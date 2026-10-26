@@ -9,6 +9,7 @@ import {
   seedTasksIfNeeded,
   TaskCategory,
 } from "@/lib/task-db";
+import type { TaskPriority } from "@/lib/planner";
 
 type TaskInput = {
   title: string;
@@ -50,11 +51,14 @@ export function useTasks() {
       isActive: false,
       createdAt: timestamp,
       updatedAt: timestamp,
+      plannedDate: null,
+      priority: "Media",
+      sortOrder: tasks.length,
     };
     setTasks((current) => [...current, item]);
     await persistTask(item);
     return item;
-  }, []);
+  }, [tasks.length]);
 
   const updateTask = useCallback(async (id: string, input: TaskInput) => {
     const existing = tasks.find((item) => item.id === id);
@@ -101,5 +105,34 @@ export function useTasks() {
     await persistTasks(next);
   }, [tasks]);
 
-  return { tasks, loading, error, createTask, updateTask, toggleTask, deleteTask, setActiveTask, reloadTasks };
+  const planTask = useCallback(async (id: string, plannedDate: string | null, priority: TaskPriority, estimatedPomodoros: number) => {
+    const dayTasks = tasks.filter((item) => item.plannedDate === plannedDate);
+    const changed = tasks.find((item) => item.id === id);
+    if (!changed) return;
+    const next: RitmoTask = {
+      ...changed,
+      plannedDate,
+      priority,
+      estimatedPomodoros,
+      completedPomodoros: Math.min(changed.completedPomodoros, estimatedPomodoros),
+      sortOrder: changed.plannedDate === plannedDate ? changed.sortOrder : dayTasks.length,
+      updatedAt: Date.now(),
+    };
+    setTasks((current) => current.map((item) => item.id === id ? next : item));
+    await persistTask(next);
+  }, [tasks]);
+
+  const reorderPlannedTasks = useCallback(async (plannedDate: string, orderedIds: string[]) => {
+    const order = new Map(orderedIds.map((id, index) => [id, index]));
+    const changed = tasks.filter((item) => item.plannedDate === plannedDate && order.has(item.id)).map((item) => ({
+      ...item,
+      sortOrder: order.get(item.id) ?? item.sortOrder,
+      updatedAt: Date.now(),
+    }));
+    const byId = new Map(changed.map((item) => [item.id, item]));
+    setTasks((current) => current.map((item) => byId.get(item.id) ?? item));
+    await persistTasks(changed);
+  }, [tasks]);
+
+  return { tasks, loading, error, createTask, updateTask, toggleTask, deleteTask, setActiveTask, planTask, reorderPlannedTasks, reloadTasks };
 }

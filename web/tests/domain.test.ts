@@ -5,6 +5,7 @@ import { nextBreakMode, timestampRemaining } from "../lib/pomodoro-engine.ts";
 import { normalizeFocusSound, normalizeFocusVolume } from "../lib/focus-audio.ts";
 import { isDeepFocusShortcut } from "../lib/deep-focus.ts";
 import { isCommandPaletteShortcut } from "../lib/command-palette.ts";
+import { dateFromKey, localDateKey, shiftDateKey, weekAround } from "../lib/planner.ts";
 import type { FocusSession } from "../lib/pomodoro-db.ts";
 import type { RitmoTask } from "../lib/task-db.ts";
 
@@ -92,4 +93,16 @@ test("la Command Palette supporta le scorciatoie Mac e Windows", () => {
   assert.equal(isCommandPaletteShortcut({ key: "K", metaKey: false, ctrlKey: true }), true);
   assert.equal(isCommandPaletteShortcut({ key: "k", metaKey: false, ctrlKey: false }), false);
   assert.equal(isCommandPaletteShortcut({ key: "p", metaKey: true, ctrlKey: false }), false);
+});
+
+test("il Planner usa date locali stabili anche attraversando mese e anno", () => {
+  assert.equal(localDateKey(new Date(2026, 11, 31, 23, 30)), "2026-12-31");
+  assert.equal(shiftDateKey("2026-12-31", 1), "2027-01-01");
+  assert.equal(shiftDateKey("2027-01-01", -1), "2026-12-31");
+  assert.equal(dateFromKey("2026-10-26").getHours(), 12);
+});
+
+test("il calendario Planner restituisce sempre la settimana lunedì-domenica", () => {
+  const days = weekAround("2026-10-28");
+  assert.deepEqual(days, ["2026-10-26", "2026-10-27", "2026-10-28", "2026-10-29", "2026-10-30", "2026-10-31", "2026-11-01"]);
 });

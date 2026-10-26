@@ -36,6 +36,7 @@ export const taskToRow = (userId: string, task: RitmoTask) => ({
   estimated_pomodoros: task.estimatedPomodoros, completed_pomodoros: task.completedPomodoros,
   completed: task.completed, completed_at: task.completedAt ?? null, is_active: task.isActive,
   created_at: task.createdAt, updated_at: task.updatedAt,
+  planned_date: task.plannedDate, priority: task.priority, sort_order: task.sortOrder,
 });
 
 export const sessionToRow = (userId: string, session: FocusSession) => ({

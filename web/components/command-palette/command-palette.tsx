@@ -3,6 +3,7 @@
 import {
   AudioWaveform,
   BarChart3,
+  CalendarDays,
   Check,
   CloudRain,
   Focus,
@@ -34,7 +35,7 @@ import type { TimerState } from "@/lib/pomodoro-db";
 import type { RitmoPreferences, RitmoTheme } from "@/lib/preferences-db";
 import type { RitmoTask } from "@/lib/task-db";
 
-export type CommandSection = "focus" | "tasks" | "statistics" | "settings";
+export type CommandSection = "focus" | "planner" | "tasks" | "statistics" | "settings";
 
 type Props = {
   open: boolean;
@@ -55,6 +56,7 @@ type Props = {
 
 const navigation = [
   { section: "focus", label: "Focus", description: "Apri timer e sessione corrente", icon: Focus, shortcut: "G F" },
+  { section: "planner", label: "Planner", description: "Organizza attività e Pomodori per giorno", icon: CalendarDays, shortcut: "G P" },
   { section: "tasks", label: "Attività", description: "Organizza i tuoi task", icon: ListTodo, shortcut: "G A" },
   { section: "statistics", label: "Statistiche", description: "Consulta ritmo e cronologia", icon: BarChart3, shortcut: "G S" },
   { section: "settings", label: "Impostazioni", description: "Personalizza RITMO", icon: Settings, shortcut: "G I" },

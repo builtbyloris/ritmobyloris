@@ -1,7 +1,7 @@
 "use client";
 
 import {
-  BarChart3, CheckSquare2, ChevronRight, Circle, Clock3, Coffee, Focus,
+  BarChart3, CalendarDays, CheckSquare2, ChevronRight, Circle, Clock3, Coffee, Focus,
   History, Leaf, ListTodo, LogOut, Moon, MoreHorizontal, Pause, Play, RotateCcw,
   Maximize2, Search, Settings, SkipForward, Sparkles, Square, Sun, Target, TimerReset,
 } from "lucide-react";
@@ -13,6 +13,7 @@ import { SettingsDashboard } from "@/components/settings/settings-dashboard";
 import { TaskManager } from "@/components/tasks/task-manager";
 import { DeepFocusMode } from "@/components/focus/deep-focus-mode";
 import { CommandPalette } from "@/components/command-palette/command-palette";
+import { DailyPlanner } from "@/components/planner/daily-planner";
 import { usePomodoro } from "@/hooks/use-pomodoro";
 import { useFocusAudio } from "@/hooks/use-focus-audio";
 import { usePreferences } from "@/hooks/use-preferences";
@@ -24,7 +25,7 @@ import { isCommandPaletteShortcut } from "@/lib/command-palette";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 
 type Theme = RitmoTheme;
-type Section = "focus" | "tasks" | "statistics" | "settings";
+type Section = "focus" | "planner" | "tasks" | "statistics" | "settings";
 
 export function RitmoApp({ userName, userEmail }: { userName: string; userEmail: string }) {
   const router = useRouter();
@@ -147,6 +148,7 @@ export function RitmoApp({ userName, userEmail }: { userName: string; userEmail:
     <Sidebar section={section} onChange={setSection} onOpenCommand={openCommands} userName={userName} userEmail={userEmail} onSignOut={signOut} />
     <section className="workspace"><AnimatePresence mode="wait" initial={false}>
       {section === "focus" && <motion.div key="focus" initial={{ opacity: 0, y: reduceMotion ? 0 : 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: reduceMotion ? 0 : -6 }} transition={{ duration: reduceMotion ? 0 : .22 }}><FocusDashboard userName={userName} theme={theme} setTheme={(value) => void preferenceStore.updatePreferences({ theme: value })} dailyGoal={preferenceStore.preferences?.dailyGoal ?? 4} tasks={taskStore.tasks} activeTask={activeTask} pomodoro={pomodoro} onPresetChange={setPreset} onSelectTask={selectTask} onShowHistory={() => setSection("statistics")} onDeepFocus={() => setDeepFocus(true)} /></motion.div>}
+      {section === "planner" && <DailyPlanner key="planner" tasks={taskStore.tasks} loading={taskStore.loading} error={taskStore.error} timerBusy={pomodoro.timer?.status !== "idle"} onPlan={taskStore.planTask} onReorder={taskStore.reorderPlannedTasks} onToggle={taskStore.toggleTask} onStartFocus={startFocus} onCreateTask={() => setSection("tasks")} />}
       {section === "tasks" && <TaskManager key="tasks" tasks={taskStore.tasks} loading={taskStore.loading} error={taskStore.error} timerBusy={pomodoro.timer?.status !== "idle"} onCreate={taskStore.createTask} onUpdate={taskStore.updateTask} onToggle={taskStore.toggleTask} onDelete={taskStore.deleteTask} onStartFocus={startFocus} />}
       {section === "statistics" && <StatisticsDashboard key="statistics" sessions={pomodoro.sessions} tasks={taskStore.tasks} dailyGoal={preferenceStore.preferences?.dailyGoal ?? 4} />}
       {section === "settings" && <SettingsDashboard key="settings" preferences={preferenceStore.preferences} error={preferenceStore.error} notificationPermission={preferenceStore.notificationPermission} timer={pomodoro.timer} onUpdate={preferenceStore.updatePreferences} onRequestNotifications={preferenceStore.requestNotifications} onTestSound={preferenceStore.testSound} onPreviewFocusSound={preferenceStore.previewFocusSound} onExport={preferenceStore.exportData} />}
@@ -158,7 +160,7 @@ export function RitmoApp({ userName, userEmail }: { userName: string; userEmail:
 }
 
 function Sidebar({ section, onChange, onOpenCommand, userName, userEmail, onSignOut }: { section: Section; onChange: (section: Section) => void; onOpenCommand: () => void; userName: string; userEmail: string; onSignOut: () => Promise<void> }) {
-  const items = [["focus", Focus, "Focus"], ["tasks", ListTodo, "Attività"], ["statistics", BarChart3, "Statistiche"], ["settings", Settings, "Impostazioni"]] as const;
+  const items = [["focus", Focus, "Focus"], ["planner", CalendarDays, "Planner"], ["tasks", ListTodo, "Attività"], ["statistics", BarChart3, "Statistiche"], ["settings", Settings, "Impostazioni"]] as const;
   return <aside className="sidebar"><div className="brand" aria-label="Ritmo"><span className="brand-mark" /><span>R I T M O</span></div><nav aria-label="Navigazione principale">{items.map(([value, Icon, label]) => <button key={value} className={`nav-item ${section === value ? "active" : ""}`} onClick={() => onChange(value)} aria-label={label} aria-current={section === value ? "page" : undefined}><Icon size={20} /><span>{label}</span></button>)}<button className="nav-item command-nav-item" onClick={onOpenCommand} aria-label="Apri palette comandi"><Search size={20} /><span>Comandi</span><kbd>⌘K</kbd></button></nav><div className="sidebar-note"><Leaf size={22} /><p>Mantieni<br />il tuo ritmo.</p></div><div className="account-card"><span className="account-avatar">{userName.slice(0, 1).toUpperCase()}</span><span><strong>{userName}</strong><small>{userEmail}</small></span><button onClick={() => void onSignOut()} title="Esci" aria-label="Esci dall’account"><LogOut size={17} /></button></div></aside>;
 }
 
