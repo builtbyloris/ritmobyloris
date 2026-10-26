@@ -1,0 +1,45 @@
+# Secrets and local environment
+.env
+.env.*
+**/.env
+**/.env.*
+!**/.env.example
+.dev.vars*
+*.pem
+*.key
+
+# JavaScript dependencies and generated output
+**/node_modules/
+**/.next/
+**/.vinext/
+**/dist/
+**/out/
+**/coverage/
+**/.wrangler/
+**/.sites-runtime/
+**/.vercel/
+**/next-env.d.ts
+**/*.tsbuildinfo
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# Xcode and Swift Package Manager
+DerivedData/
+build/
+**/xcuserdata/
+*.xcuserstate
+*.xccheckout
+*.xcscmblueprint
+.build/
+.swiftpm/
+
+# Local tooling and publication archives
+.agents/
+.codex/
+**/outputs/
+**/work/
+
+# OS metadata
+.DS_Store
