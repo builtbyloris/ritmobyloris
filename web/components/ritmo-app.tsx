@@ -25,6 +25,7 @@ import { unlockFocusAudio } from "@/lib/focus-audio";
 import { isDeepFocusShortcut } from "@/lib/deep-focus";
 import { isCommandPaletteShortcut } from "@/lib/command-palette";
 import { completeOnboarding, hasCompletedOnboarding } from "@/lib/onboarding";
+import { readPalette, writePalette, type RitmoPalette } from "@/lib/visual-theme";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 
 type Theme = RitmoTheme;
@@ -37,6 +38,7 @@ export function RitmoApp({ userId, userName, userEmail }: { userId: string; user
   const [deepFocus, setDeepFocus] = useState(false);
   const [commandOpen, setCommandOpen] = useState(false);
   const [tutorialOpen, setTutorialOpen] = useState(false);
+  const [palette, setPalette] = useState<RitmoPalette>("ritmo");
   const commandReturnFocus = useRef<HTMLElement | null>(null);
   const onboardingChecked = useRef(false);
   const taskStore = useTasks();
@@ -73,6 +75,15 @@ export function RitmoApp({ userId, userName, userEmail }: { userId: string; user
     document.documentElement.dataset.theme = theme;
     localStorage.setItem("ritmo-theme", theme);
   }, [theme]);
+  useEffect(() => {
+    document.documentElement.dataset.palette = palette;
+  }, [palette]);
+  useEffect(() => {
+    const frame = window.requestAnimationFrame(() => {
+      try { setPalette(readPalette(userId)); } catch { /* Storage can be unavailable in private browsing. */ }
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, [userId]);
   useEffect(() => {
     if (onboardingChecked.current) return;
     onboardingChecked.current = true;
@@ -145,6 +156,10 @@ export function RitmoApp({ userId, userName, userEmail }: { userId: string; user
     try { completeOnboarding(userId); } catch { /* Private browsing may disable local storage. */ }
     setTutorialOpen(false);
   }, [userId]);
+  const changePalette = useCallback((value: RitmoPalette) => {
+    setPalette(value);
+    try { writePalette(userId, value); } catch { /* The selected palette still applies for this session. */ }
+  }, [userId]);
 
   async function signOut() {
     await getSupabaseBrowserClient().auth.signOut();
@@ -172,12 +187,12 @@ export function RitmoApp({ userId, userName, userEmail }: { userId: string; user
       {section === "planner" && <DailyPlanner key="planner" tasks={taskStore.tasks} loading={taskStore.loading} error={taskStore.error} timerBusy={pomodoro.timer?.status !== "idle"} onPlan={taskStore.planTask} onReorder={taskStore.reorderPlannedTasks} onToggle={taskStore.toggleTask} onStartFocus={startFocus} onCreateTask={() => setSection("tasks")} />}
       {section === "tasks" && <TaskManager key="tasks" tasks={taskStore.tasks} loading={taskStore.loading} error={taskStore.error} timerBusy={pomodoro.timer?.status !== "idle"} onCreate={taskStore.createTask} onUpdate={taskStore.updateTask} onToggle={taskStore.toggleTask} onDelete={taskStore.deleteTask} onStartFocus={startFocus} />}
       {section === "statistics" && <StatisticsDashboard key="statistics" sessions={pomodoro.sessions} tasks={taskStore.tasks} dailyGoal={preferenceStore.preferences?.dailyGoal ?? 4} />}
-      {section === "settings" && <SettingsDashboard key="settings" preferences={preferenceStore.preferences} error={preferenceStore.error} notificationPermission={preferenceStore.notificationPermission} timer={pomodoro.timer} onUpdate={preferenceStore.updatePreferences} onRequestNotifications={preferenceStore.requestNotifications} onTestSound={preferenceStore.testSound} onPreviewFocusSound={preferenceStore.previewFocusSound} onExport={preferenceStore.exportData} />}
+      {section === "settings" && <SettingsDashboard key="settings" preferences={preferenceStore.preferences} palette={palette} error={preferenceStore.error} notificationPermission={preferenceStore.notificationPermission} timer={pomodoro.timer} onUpdate={preferenceStore.updatePreferences} onPaletteChange={changePalette} onRequestNotifications={preferenceStore.requestNotifications} onTestSound={preferenceStore.testSound} onPreviewFocusSound={preferenceStore.previewFocusSound} onExport={preferenceStore.exportData} />}
       {section === "help" && <HelpCenter key="help" onReplayTutorial={() => setTutorialOpen(true)} />}
     </AnimatePresence></section>
     <AnimatePresence>{pomodoro.notice && <motion.button className="timer-toast" role="status" initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} onClick={pomodoro.clearNotice}>{pomodoro.notice}<span>Chiudi</span></motion.button>}</AnimatePresence>
   </main>}</AnimatePresence>
-    <CommandPalette open={commandOpen} onOpenChange={handleCommandOpenChange} section={section} deepFocus={deepFocus} tasks={taskStore.tasks} activeTask={activeTask} timer={pomodoro.timer} preferences={preferenceStore.preferences} onNavigate={navigate} onToggleTimer={toggleTimer} onToggleDeepFocus={toggleDeepFocus} onSelectTask={selectTask} onThemeChange={(value) => preferenceStore.updatePreferences({ theme: value })} onSoundChange={(value) => preferenceStore.updatePreferences({ focusSound: value })} />
+    <CommandPalette open={commandOpen} onOpenChange={handleCommandOpenChange} section={section} deepFocus={deepFocus} tasks={taskStore.tasks} activeTask={activeTask} timer={pomodoro.timer} preferences={preferenceStore.preferences} palette={palette} onNavigate={navigate} onToggleTimer={toggleTimer} onToggleDeepFocus={toggleDeepFocus} onSelectTask={selectTask} onThemeChange={(value) => preferenceStore.updatePreferences({ theme: value })} onPaletteChange={changePalette} onSoundChange={(value) => preferenceStore.updatePreferences({ focusSound: value })} />
     <OnboardingTour open={tutorialOpen} onComplete={finishTutorial} />
   </>;
 }

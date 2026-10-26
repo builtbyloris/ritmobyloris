@@ -6,13 +6,16 @@ import { AudioWaveform, Bell, Check, CloudRain, Clock3, Database, Download, Minu
 import type { FocusSound } from "@/lib/focus-audio";
 import type { RitmoPreferences, RitmoPreset, RitmoTheme } from "@/lib/preferences-db";
 import type { TimerState } from "@/lib/pomodoro-db";
+import { RITMO_PALETTES, type RitmoPalette } from "@/lib/visual-theme";
 
 type Props = {
   preferences: RitmoPreferences | null;
+  palette: RitmoPalette;
   error: string | null;
   notificationPermission: "unsupported" | NotificationPermission;
   timer: TimerState | null;
   onUpdate: (changes: Partial<Omit<RitmoPreferences, "id">>) => Promise<RitmoPreferences | undefined>;
+  onPaletteChange: (palette: RitmoPalette) => void;
   onRequestNotifications: () => Promise<"unsupported" | NotificationPermission>;
   onTestSound: () => Promise<boolean>;
   onPreviewFocusSound: () => Promise<boolean>;
@@ -32,7 +35,7 @@ const focusSounds: Array<{ value: FocusSound; label: string; description: string
   { value: "waves", label: "Onde", description: "Lente e rilassanti", icon: Waves },
 ];
 
-export function SettingsDashboard({ preferences, error, notificationPermission, timer, onUpdate, onRequestNotifications, onTestSound, onPreviewFocusSound, onExport }: Props) {
+export function SettingsDashboard({ preferences, palette, error, notificationPermission, timer, onUpdate, onPaletteChange, onRequestNotifications, onTestSound, onPreviewFocusSound, onExport }: Props) {
   const reduceMotion = useReducedMotion();
   const [feedback, setFeedback] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -72,7 +75,7 @@ export function SettingsDashboard({ preferences, error, notificationPermission, 
       </SettingsCard>
       <SettingsCard icon={Target} title="Obiettivo giornaliero" subtitle="Quante sessioni vuoi completare ogni giorno"><Stepper label="Sessioni giornaliere" description="Il tuo traguardo quotidiano" value={preferences.dailyGoal} unit="sessioni" min={1} max={20} onChange={(value) => update({ dailyGoal: value })} /></SettingsCard>
     </section><aside className="settings-aside">
-      <SettingsCard icon={Palette} title="Aspetto" subtitle="Scegli come appare RITMO"><div className="appearance-tabs">{([ ["system", Sparkles, "Automatico"], ["light", Sun, "Chiaro"], ["dark", Moon, "Scuro"] ] as Array<[RitmoTheme, typeof Sun, string]>).map(([value, Icon, label]) => <button key={value} className={preferences.theme === value ? "active" : ""} aria-pressed={preferences.theme === value} onClick={() => update({ theme: value }, `Tema ${label}`)}><Icon size={18} /><span>{label}</span></button>)}</div><div className="theme-previews" aria-hidden="true"><div className="auto-preview"><i /><i /></div><div className="light-preview"><i /><i /></div><div className="dark-preview"><i /><i /></div></div></SettingsCard>
+      <SettingsCard icon={Palette} title="Temi" subtitle="Scegli modalità e atmosfera di RITMO"><div className="theme-mode-label"><strong>Modalità</strong><small>Segui il sistema oppure forza chiaro o scuro</small></div><div className="appearance-tabs">{([ ["system", Sparkles, "Automatico"], ["light", Sun, "Chiaro"], ["dark", Moon, "Scuro"] ] as Array<[RitmoTheme, typeof Sun, string]>).map(([value, Icon, label]) => <button key={value} className={preferences.theme === value ? "active" : ""} aria-pressed={preferences.theme === value} onClick={() => update({ theme: value }, `Modalità ${label}`)}><Icon size={18} /><span>{label}</span></button>)}</div><div className="theme-palette-label"><strong>Atmosfera</strong><small>Cambia colori, accenti e luce ambientale</small></div><div className="theme-palette-grid">{RITMO_PALETTES.map((item) => <button key={item.value} className={palette === item.value ? "active" : ""} aria-pressed={palette === item.value} onClick={() => { onPaletteChange(item.value); setFeedback(`Tema ${item.label} applicato`); window.setTimeout(() => setFeedback(null), 2400); }}><span className="theme-palette-preview" style={{ "--theme-a": item.colors[0], "--theme-b": item.colors[1], "--theme-bg": item.colors[2] } as React.CSSProperties}><i /><i /><i /></span><span><strong>{item.label}</strong><small>{item.description}</small></span>{palette === item.value ? <Check size={15} /> : null}</button>)}</div><p className="theme-device-note">L’atmosfera viene ricordata su questo dispositivo; la modalità chiaro/scuro resta sincronizzata con il tuo account.</p></SettingsCard>
       <SettingsCard icon={ShieldCheck} title="Dati e privacy" subtitle="I tuoi dati, protetti dal tuo account"><div className="privacy-box"><Database size={25} /><div><strong>Spazio personale sincronizzato</strong><p>Attività, sessioni e preferenze sono associate al tuo account Google e protette da regole di accesso per utente.</p></div></div><button className="export-button" disabled={busy} onClick={exportData}><Download size={17} /> Esporta dati JSON</button><small className="export-caption">Crea una copia locale leggibile e portabile</small></SettingsCard>
     </aside></div>
   </motion.div>;

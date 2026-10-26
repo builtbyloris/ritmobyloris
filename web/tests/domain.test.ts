@@ -7,6 +7,7 @@ import { isDeepFocusShortcut } from "../lib/deep-focus.ts";
 import { isCommandPaletteShortcut } from "../lib/command-palette.ts";
 import { dateFromKey, localDateKey, shiftDateKey, weekAround } from "../lib/planner.ts";
 import { completeOnboarding, hasCompletedOnboarding, onboardingStorageKey } from "../lib/onboarding.ts";
+import { normalizePalette, paletteStorageKey, readPalette, writePalette } from "../lib/visual-theme.ts";
 import type { FocusSession } from "../lib/pomodoro-db.ts";
 import type { RitmoTask } from "../lib/task-db.ts";
 
@@ -120,4 +121,19 @@ test("il tutorial iniziale viene ricordato separatamente per ogni utente", () =>
   assert.equal(hasCompletedOnboarding("utente-a", storage), true);
   assert.equal(hasCompletedOnboarding("utente-b", storage), false);
   assert.match(onboardingStorageKey("utente-a"), /:v1$/);
+});
+
+test("la palette visiva è validata e salvata separatamente per account", () => {
+  const values = new Map<string, string>();
+  const storage = {
+    getItem: (key: string) => values.get(key) ?? null,
+    setItem: (key: string, value: string) => { values.set(key, value); },
+  };
+
+  assert.equal(normalizePalette("ocean"), "ocean");
+  assert.equal(normalizePalette("neon"), "ritmo");
+  writePalette("utente-a", "forest", storage);
+  assert.equal(readPalette("utente-a", storage), "forest");
+  assert.equal(readPalette("utente-b", storage), "ritmo");
+  assert.match(paletteStorageKey("utente-a"), /:v1$/);
 });

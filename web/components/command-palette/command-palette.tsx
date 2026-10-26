@@ -35,6 +35,7 @@ import type { FocusSound } from "@/lib/focus-audio";
 import type { TimerState } from "@/lib/pomodoro-db";
 import type { RitmoPreferences, RitmoTheme } from "@/lib/preferences-db";
 import type { RitmoTask } from "@/lib/task-db";
+import { RITMO_PALETTES, type RitmoPalette } from "@/lib/visual-theme";
 
 export type CommandSection = "focus" | "planner" | "tasks" | "statistics" | "settings" | "help";
 
@@ -47,11 +48,13 @@ type Props = {
   activeTask?: RitmoTask;
   timer: TimerState | null;
   preferences: RitmoPreferences | null;
+  palette: RitmoPalette;
   onNavigate: (section: CommandSection) => void;
   onToggleTimer: () => Promise<void>;
   onToggleDeepFocus: () => void;
   onSelectTask: (id: string) => Promise<void>;
   onThemeChange: (theme: RitmoTheme) => Promise<unknown>;
+  onPaletteChange: (palette: RitmoPalette) => void;
   onSoundChange: (sound: FocusSound) => Promise<unknown>;
 };
 
@@ -77,7 +80,7 @@ const sounds: Array<{ value: FocusSound; label: string; icon: typeof Waves }> = 
   { value: "waves", label: "Sottofondo: onde", icon: Waves },
 ];
 
-export function CommandPalette({ open, onOpenChange, section, deepFocus, tasks, activeTask, timer, preferences, onNavigate, onToggleTimer, onToggleDeepFocus, onSelectTask, onThemeChange, onSoundChange }: Props) {
+export function CommandPalette({ open, onOpenChange, section, deepFocus, tasks, activeTask, timer, preferences, palette, onNavigate, onToggleTimer, onToggleDeepFocus, onSelectTask, onThemeChange, onPaletteChange, onSoundChange }: Props) {
   const reduceMotion = useReducedMotion();
   const timerBusy = timer?.status !== "idle";
   const timerAction = timer?.status === "running" ? "Metti in pausa" : timer?.status === "paused" ? "Riprendi sessione" : timer?.mode === "focus" ? "Avvia Focus" : "Avvia pausa";
@@ -115,6 +118,7 @@ export function CommandPalette({ open, onOpenChange, section, deepFocus, tasks, 
       <CommandSeparator />
       <CommandGroup heading="Aspetto e suoni">
         {themes.map(({ value, label, icon: Icon }) => <CommandItem key={value} value={`${label} aspetto`} onSelect={() => run(() => onThemeChange(value))}><span className="command-icon"><Icon size={17} /></span><span className="command-copy"><strong>{label}</strong><small>{value === "system" ? "Segue le impostazioni del dispositivo" : `Usa sempre l’aspetto ${value === "light" ? "chiaro" : "scuro"}`}</small></span>{preferences?.theme === value ? <span className="command-current"><Check size={13} /> Attivo</span> : null}</CommandItem>)}
+        {RITMO_PALETTES.map(({ value, label, description }) => <CommandItem key={value} value={`Palette tema ${label} ${description}`} onSelect={() => run(() => onPaletteChange(value))}><span className={`command-theme-swatch ${value}`} /><span className="command-copy"><strong>Tema {label}</strong><small>{description}</small></span>{palette === value ? <span className="command-current"><Check size={13} /> Attivo</span> : null}</CommandItem>)}
         {sounds.map(({ value, label, icon: Icon }) => <CommandItem key={value} value={`${label} audio concentrazione`} onSelect={() => run(() => onSoundChange(value))}><span className="command-icon"><Icon size={17} /></span><span className="command-copy"><strong>{label}</strong><small>{value === "off" ? "Disattiva l’atmosfera durante il Focus" : "Riproduci durante le sessioni Focus"}</small></span>{preferences?.focusSound === value ? <span className="command-current"><Check size={13} /> Attivo</span> : null}</CommandItem>)}
       </CommandGroup>
     </CommandList>
