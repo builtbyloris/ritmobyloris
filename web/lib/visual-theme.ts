@@ -1,4 +1,4 @@
-export type RitmoPalette = "ritmo" | "aurora" | "ocean" | "forest" | "sunset" | "graphite";
+export type RitmoPalette = "ritmo" | "nordic" | "ocean" | "cherry" | "espresso" | "graphite";
 
 export const RITMO_PALETTES: ReadonlyArray<{
   value: RitmoPalette;
@@ -7,10 +7,10 @@ export const RITMO_PALETTES: ReadonlyArray<{
   colors: readonly [string, string, string];
 }> = [
   { value: "ritmo", label: "Ritmo", description: "Lavanda e ambra", colors: ["#8379ee", "#f6b943", "#171c29"] },
-  { value: "aurora", label: "Aurora", description: "Viola e corallo", colors: ["#a76cf2", "#ff7e79", "#1c1428"] },
+  { value: "nordic", label: "Nordico", description: "Ghiaccio e perla", colors: ["#6e98c8", "#d8d5ca", "#101923"] },
   { value: "ocean", label: "Oceano", description: "Blu e acqua", colors: ["#4d8ef7", "#45d2ca", "#091a26"] },
-  { value: "forest", label: "Bosco", description: "Verde e miele", colors: ["#4fa980", "#e4ad45", "#101d18"] },
-  { value: "sunset", label: "Tramonto", description: "Terracotta e rosa", colors: ["#d86f67", "#ef9a72", "#251518"] },
+  { value: "cherry", label: "Ciliegio", description: "Rosa e prugna", colors: ["#b45f8d", "#e7a2bc", "#21101a"] },
+  { value: "espresso", label: "Espresso", description: "Moka e crema", colors: ["#8b6752", "#d2ad78", "#1d1512"] },
   { value: "graphite", label: "Grafite", description: "Ardesia e argento", colors: ["#7d8ca8", "#c2a976", "#14171d"] },
 ] as const;
 

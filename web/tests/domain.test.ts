@@ -132,8 +132,8 @@ test("la palette visiva è validata e salvata separatamente per account", () => 
 
   assert.equal(normalizePalette("ocean"), "ocean");
   assert.equal(normalizePalette("neon"), "ritmo");
-  writePalette("utente-a", "forest", storage);
-  assert.equal(readPalette("utente-a", storage), "forest");
+  writePalette("utente-a", "espresso", storage);
+  assert.equal(readPalette("utente-a", storage), "espresso");
   assert.equal(readPalette("utente-b", storage), "ritmo");
   assert.match(paletteStorageKey("utente-a"), /:v1$/);
 });
