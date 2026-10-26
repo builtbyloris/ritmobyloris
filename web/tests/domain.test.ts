@@ -3,6 +3,7 @@ import test from "node:test";
 import { buildAnalytics, percentChange } from "../lib/analytics.ts";
 import { nextBreakMode, timestampRemaining } from "../lib/pomodoro-engine.ts";
 import { normalizeFocusSound, normalizeFocusVolume } from "../lib/focus-audio.ts";
+import { isDeepFocusShortcut } from "../lib/deep-focus.ts";
 import type { FocusSession } from "../lib/pomodoro-db.ts";
 import type { RitmoTask } from "../lib/task-db.ts";
 
@@ -76,4 +77,11 @@ test("le preferenze audio normalizzano scelta e volume senza valori non validi",
   assert.equal(normalizeFocusSound("vento"), "off");
   assert.equal(normalizeFocusVolume(2), 1);
   assert.equal(normalizeFocusVolume(Number.NaN), .35);
+});
+
+test("Deep Focus usa una scorciatoia intenzionale e non intercetta la digitazione normale", () => {
+  assert.equal(isDeepFocusShortcut({ key: "d", metaKey: true, ctrlKey: false, shiftKey: true }), true);
+  assert.equal(isDeepFocusShortcut({ key: "D", metaKey: false, ctrlKey: true, shiftKey: true }), true);
+  assert.equal(isDeepFocusShortcut({ key: "d", metaKey: false, ctrlKey: false, shiftKey: true }), false);
+  assert.equal(isDeepFocusShortcut({ key: "d", metaKey: true, ctrlKey: false, shiftKey: false }), false);
 });

@@ -3,20 +3,22 @@
 import {
   BarChart3, CheckSquare2, ChevronRight, Circle, Clock3, Coffee, Focus,
   History, Leaf, ListTodo, LogOut, Moon, MoreHorizontal, Pause, Play, RotateCcw,
-  Settings, SkipForward, Sparkles, Square, Sun, Target, TimerReset,
+  Maximize2, Settings, SkipForward, Sparkles, Square, Sun, Target, TimerReset,
 } from "lucide-react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { StatisticsDashboard } from "@/components/statistics/statistics-dashboard";
 import { SettingsDashboard } from "@/components/settings/settings-dashboard";
 import { TaskManager } from "@/components/tasks/task-manager";
+import { DeepFocusMode } from "@/components/focus/deep-focus-mode";
 import { usePomodoro } from "@/hooks/use-pomodoro";
 import { useFocusAudio } from "@/hooks/use-focus-audio";
 import { usePreferences } from "@/hooks/use-preferences";
 import { useTasks } from "@/hooks/use-tasks";
 import type { RitmoPreset, RitmoTheme } from "@/lib/preferences-db";
 import { unlockFocusAudio } from "@/lib/focus-audio";
+import { isDeepFocusShortcut } from "@/lib/deep-focus";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 
 type Theme = RitmoTheme;
@@ -26,6 +28,7 @@ export function RitmoApp({ userName, userEmail }: { userName: string; userEmail:
   const router = useRouter();
   const reduceMotion = useReducedMotion();
   const [section, setSection] = useState<Section>("focus");
+  const [deepFocus, setDeepFocus] = useState(false);
   const taskStore = useTasks();
   const preferenceStore = usePreferences();
   const pomodoro = usePomodoro(taskStore.reloadTasks, preferenceStore.preferences);
@@ -35,6 +38,15 @@ export function RitmoApp({ userName, userEmail }: { userName: string; userEmail:
   const activeTask = taskStore.tasks.find((task) => task.id === pomodoro.timer?.taskId)
     ?? taskStore.tasks.find((task) => task.isActive);
 
+  const exitDeepFocus = useCallback(() => {
+    void (async () => {
+      if (document.fullscreenElement) {
+        try { await document.exitFullscreen(); } catch { /* Browser keeps control of fullscreen failures. */ }
+      }
+      setDeepFocus(false);
+    })();
+  }, []);
+
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
     localStorage.setItem("ritmo-theme", theme);
@@ -42,6 +54,19 @@ export function RitmoApp({ userName, userEmail }: { userName: string; userEmail:
   useEffect(() => {
     if (pomodoro.timer && !pomodoro.timer.taskId && activeTask) void setTimerTask(activeTask.id);
   }, [activeTask, pomodoro.timer, setTimerTask]);
+  useEffect(() => {
+    const toggleDeepFocus = (event: KeyboardEvent) => {
+      const target = event.target as HTMLElement | null;
+      if (target?.isContentEditable || target?.matches("input, textarea, select")) return;
+      if (!isDeepFocusShortcut(event) || !pomodoro.timer || !preferenceStore.preferences) return;
+      event.preventDefault();
+      setSection("focus");
+      if (deepFocus) exitDeepFocus();
+      else setDeepFocus(true);
+    };
+    window.addEventListener("keydown", toggleDeepFocus);
+    return () => window.removeEventListener("keydown", toggleDeepFocus);
+  }, [deepFocus, exitDeepFocus, pomodoro.timer, preferenceStore.preferences]);
 
   async function selectTask(id: string) {
     await Promise.all([taskStore.setActiveTask(id), pomodoro.setTask(id)]);
@@ -62,16 +87,28 @@ export function RitmoApp({ userName, userEmail }: { userName: string; userEmail:
     router.refresh();
   }
 
-  return <main className="app-shell">
+  return <AnimatePresence mode="wait" initial={false}>{deepFocus && pomodoro.timer && preferenceStore.preferences ? <DeepFocusMode
+    key="deep-focus"
+    timer={pomodoro.timer}
+    time={pomodoro.time}
+    progress={pomodoro.progress}
+    activeTask={activeTask}
+    preferences={preferenceStore.preferences}
+    onStart={() => pomodoro.start(activeTask?.id ?? null)}
+    onPause={pomodoro.pause}
+    onTerminate={pomodoro.terminate}
+    onUpdatePreferences={preferenceStore.updatePreferences}
+    onExit={exitDeepFocus}
+  /> : <main className="app-shell" key="dashboard">
     <Sidebar section={section} onChange={setSection} userName={userName} userEmail={userEmail} onSignOut={signOut} />
     <section className="workspace"><AnimatePresence mode="wait" initial={false}>
-      {section === "focus" && <motion.div key="focus" initial={{ opacity: 0, y: reduceMotion ? 0 : 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: reduceMotion ? 0 : -6 }} transition={{ duration: reduceMotion ? 0 : .22 }}><FocusDashboard userName={userName} theme={theme} setTheme={(value) => void preferenceStore.updatePreferences({ theme: value })} dailyGoal={preferenceStore.preferences?.dailyGoal ?? 4} tasks={taskStore.tasks} activeTask={activeTask} pomodoro={pomodoro} onPresetChange={setPreset} onSelectTask={selectTask} onShowHistory={() => setSection("statistics")} /></motion.div>}
+      {section === "focus" && <motion.div key="focus" initial={{ opacity: 0, y: reduceMotion ? 0 : 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: reduceMotion ? 0 : -6 }} transition={{ duration: reduceMotion ? 0 : .22 }}><FocusDashboard userName={userName} theme={theme} setTheme={(value) => void preferenceStore.updatePreferences({ theme: value })} dailyGoal={preferenceStore.preferences?.dailyGoal ?? 4} tasks={taskStore.tasks} activeTask={activeTask} pomodoro={pomodoro} onPresetChange={setPreset} onSelectTask={selectTask} onShowHistory={() => setSection("statistics")} onDeepFocus={() => setDeepFocus(true)} /></motion.div>}
       {section === "tasks" && <TaskManager key="tasks" tasks={taskStore.tasks} loading={taskStore.loading} error={taskStore.error} timerBusy={pomodoro.timer?.status !== "idle"} onCreate={taskStore.createTask} onUpdate={taskStore.updateTask} onToggle={taskStore.toggleTask} onDelete={taskStore.deleteTask} onStartFocus={startFocus} />}
       {section === "statistics" && <StatisticsDashboard key="statistics" sessions={pomodoro.sessions} tasks={taskStore.tasks} dailyGoal={preferenceStore.preferences?.dailyGoal ?? 4} />}
       {section === "settings" && <SettingsDashboard key="settings" preferences={preferenceStore.preferences} error={preferenceStore.error} notificationPermission={preferenceStore.notificationPermission} timer={pomodoro.timer} onUpdate={preferenceStore.updatePreferences} onRequestNotifications={preferenceStore.requestNotifications} onTestSound={preferenceStore.testSound} onPreviewFocusSound={preferenceStore.previewFocusSound} onExport={preferenceStore.exportData} />}
     </AnimatePresence></section>
     <AnimatePresence>{pomodoro.notice && <motion.button className="timer-toast" role="status" initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} onClick={pomodoro.clearNotice}>{pomodoro.notice}<span>Chiudi</span></motion.button>}</AnimatePresence>
-  </main>;
+  </main>}</AnimatePresence>;
 }
 
 function Sidebar({ section, onChange, userName, userEmail, onSignOut }: { section: Section; onChange: (section: Section) => void; userName: string; userEmail: string; onSignOut: () => Promise<void> }) {
@@ -82,7 +119,7 @@ function Sidebar({ section, onChange, userName, userEmail, onSignOut }: { sectio
 type PomodoroStore = ReturnType<typeof usePomodoro>;
 type TaskStore = ReturnType<typeof useTasks>;
 
-function FocusDashboard({ userName, theme, setTheme, dailyGoal, tasks, activeTask, pomodoro, onPresetChange, onSelectTask, onShowHistory }: { userName: string; theme: Theme; setTheme: (theme: Theme) => void; dailyGoal: number; tasks: TaskStore["tasks"]; activeTask: TaskStore["tasks"][number] | undefined; pomodoro: PomodoroStore; onPresetChange: (preset: RitmoPreset, focus: number, shortBreak: number) => Promise<void>; onSelectTask: (id: string) => Promise<void>; onShowHistory: () => void }) {
+function FocusDashboard({ userName, theme, setTheme, dailyGoal, tasks, activeTask, pomodoro, onPresetChange, onSelectTask, onShowHistory, onDeepFocus }: { userName: string; theme: Theme; setTheme: (theme: Theme) => void; dailyGoal: number; tasks: TaskStore["tasks"]; activeTask: TaskStore["tasks"][number] | undefined; pomodoro: PomodoroStore; onPresetChange: (preset: RitmoPreset, focus: number, shortBreak: number) => Promise<void>; onSelectTask: (id: string) => Promise<void>; onShowHistory: () => void; onDeepFocus: () => void }) {
   const reduceMotion = useReducedMotion();
   const timer = pomodoro.timer;
   const [customFocus, setCustomFocus] = useState<number | null>(null);
@@ -96,7 +133,7 @@ function FocusDashboard({ userName, theme, setTheme, dailyGoal, tasks, activeTas
   const presetOptions = [{ label: "25 / 5", focus: 25, pause: 5 }, { label: "50 / 10", focus: 50, pause: 10 }, { label: "Personalizzato", focus: customFocusValue, pause: customBreakValue }] as const;
 
   return <>
-    <header className="page-header"><div><p className="eyebrow mobile-only">RITMO · FOCUS</p><h1>{isBreak ? "Ottimo lavoro, " : "Buongiorno, "}<span>{userName}</span></h1><p>{isBreak ? "Recupera energia. Il prossimo passo può aspettare." : "Un passo alla volta, resta nel ritmo."}</p></div><ThemeControl theme={theme} setTheme={setTheme} /></header>
+    <header className="page-header"><div><p className="eyebrow mobile-only">RITMO · FOCUS</p><h1>{isBreak ? "Ottimo lavoro, " : "Buongiorno, "}<span>{userName}</span></h1><p>{isBreak ? "Recupera energia. Il prossimo passo può aspettare." : "Un passo alla volta, resta nel ritmo."}</p></div><div className="page-header-actions"><button type="button" className="deep-focus-trigger" onClick={onDeepFocus} title="Deep Focus (⌘⇧D)"><Maximize2 size={16} /><span>Deep Focus</span><kbd>⌘⇧D</kbd></button><ThemeControl theme={theme} setTheme={setTheme} /></div></header>
     <div className="dashboard-grid"><section className="primary-column">
       <motion.article className={`card timer-card ${isBreak ? "break-mode" : ""}`} layout transition={{ duration: reduceMotion ? 0 : .3 }}>
         <div className="card-topline"><span className="status-label">{isBreak ? <Coffee size={17} /> : <Focus size={17} />} {statusLabel}</span><span className="cycle-label">Ciclo {timer.completedFocusCount % timer.longBreakEvery + 1} di {timer.longBreakEvery}</span></div>

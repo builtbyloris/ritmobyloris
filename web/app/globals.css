@@ -154,6 +154,11 @@ button:focus-visible { outline: 2px solid var(--lavender); outline-offset: 3px; 
 .theme-control button { width: 37px; height: 32px; display: grid; place-items: center; border: 0; border-radius: 999px; color: var(--muted); background: transparent; cursor: pointer; transition: .24s ease; }
 .theme-control button:hover { color: var(--text); background: var(--elevated); }
 .theme-control button.selected { color: white; background: linear-gradient(135deg, var(--lavender-soft), var(--lavender)); box-shadow: 0 8px 20px rgba(111, 98, 226, .26); }
+.page-header-actions { display: flex; align-items: center; gap: 10px; }
+.deep-focus-trigger { height: 42px; padding: 0 13px; display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--border); border-radius: 999px; color: var(--text); background: var(--card); box-shadow: 0 10px 30px rgba(0,0,0,.06); cursor: pointer; backdrop-filter: blur(18px); transition: transform .2s ease, border-color .2s ease, background .2s ease; }
+.deep-focus-trigger:hover { transform: translateY(-2px); border-color: rgba(131,121,238,.35); background: var(--elevated); }
+.deep-focus-trigger span { font-size: 12px; font-weight: 760; }
+.deep-focus-trigger kbd { padding: 3px 6px; border: 1px solid var(--line); border-radius: 7px; color: var(--muted); background: color-mix(in srgb, var(--bg-soft) 80%, transparent); font-family: inherit; font-size: 9px; }
 
 .dashboard-grid { max-width: 1220px; margin: 0 auto; display: grid; grid-template-columns: minmax(480px, 1.55fr) minmax(320px, .92fr); gap: 18px; align-items: start; }
 .primary-column, .secondary-column { display: grid; gap: 18px; }
@@ -527,11 +532,65 @@ button:focus-visible { outline: 2px solid var(--lavender); outline-offset: 3px; 
 .export-button:hover { background: rgba(131,121,238,.2); transform: translateY(-1px); }
 .export-caption { margin-top: 9px; display: block; color: var(--muted); text-align: center; font-size: 9px; }
 
+/* Deep Focus */
+.deep-focus { position: relative; min-height: 100dvh; isolation: isolate; display: grid; grid-template-rows: auto 1fr auto; overflow: hidden; padding: clamp(20px, 3vw, 42px); background: radial-gradient(circle at 50% 44%, rgba(131,121,238,.12), transparent 28%), radial-gradient(circle at 13% 84%, rgba(246,185,67,.16), transparent 31%), radial-gradient(circle at 86% 12%, rgba(131,121,238,.18), transparent 32%), var(--bg); }
+.deep-focus.break-mode { background: radial-gradient(circle at 50% 44%, rgba(131,121,238,.18), transparent 30%), radial-gradient(circle at 84% 82%, rgba(246,185,67,.12), transparent 33%), var(--bg); }
+.deep-ambient { position: absolute; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; }
+.deep-ambient i { position: absolute; width: min(52vw, 760px); aspect-ratio: 1; border-radius: 50%; filter: blur(90px); opacity: .18; animation: deep-drift 14s ease-in-out infinite alternate; }
+.deep-ambient i:nth-child(1) { top: -34%; right: -8%; background: var(--lavender); }
+.deep-ambient i:nth-child(2) { bottom: -46%; left: -8%; background: var(--amber); animation-delay: -5s; }
+.deep-ambient i:nth-child(3) { width: min(32vw, 460px); top: 38%; left: 34%; background: var(--lavender-soft); opacity: .08; animation-delay: -9s; }
+.deep-header { width: min(1480px, 100%); margin: 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 24px; }
+.deep-brand { display: flex; align-items: center; gap: 12px; color: var(--text); font-size: 13px; font-weight: 760; letter-spacing: .18em; }
+.deep-brand .brand-mark { width: 34px; height: 34px; }
+.deep-brand .brand-mark::after { background: var(--bg); }
+.deep-brand b { margin-left: 5px; padding: 6px 9px; border: 1px solid rgba(131,121,238,.2); border-radius: 999px; color: var(--lavender); background: rgba(131,121,238,.1); font-size: 8px; letter-spacing: .12em; }
+.deep-window-actions { display: flex; align-items: center; gap: 8px; }
+.deep-window-actions button { width: 42px; height: 42px; display: grid; place-items: center; border: 1px solid var(--border); border-radius: 14px; color: var(--muted); background: color-mix(in srgb, var(--card) 84%, transparent); cursor: pointer; backdrop-filter: blur(20px); transition: color .2s ease, transform .2s ease, background .2s ease; }
+.deep-window-actions button:hover { color: var(--text); transform: translateY(-2px); background: var(--elevated); }
+.deep-shortcut { padding: 7px 9px; border-radius: 9px; color: var(--muted); background: rgba(127,127,150,.08); font-size: 10px; font-weight: 750; }
+.deep-stage { width: min(820px, 100%); min-height: 0; margin: auto; padding: clamp(22px, 3vh, 38px) 0 18px; display: grid; justify-items: center; align-content: center; }
+.deep-status { min-height: 34px; display: flex; align-items: center; gap: 9px; padding: 8px 13px; border: 1px solid var(--border); border-radius: 999px; color: var(--lavender); background: color-mix(in srgb, var(--card) 78%, transparent); box-shadow: 0 12px 32px rgba(0,0,0,.08); backdrop-filter: blur(22px); font-size: 11px; font-weight: 780; letter-spacing: .08em; text-transform: uppercase; }
+.deep-status i { width: 4px; height: 4px; border-radius: 50%; background: var(--amber); }
+.deep-ring-wrap { width: min(54vh, 520px, 76vw); aspect-ratio: 1; margin: clamp(16px, 2.5vh, 28px) 0; display: grid; place-items: center; }
+.deep-ring { --deep-progress: 95deg; width: 100%; height: 100%; aspect-ratio: 1; border-radius: 50%; padding: clamp(14px, 2vw, 21px); background: conic-gradient(from -90deg, var(--amber), var(--amber-soft) calc(var(--deep-progress) * .44), var(--lavender-soft) var(--deep-progress), color-mix(in srgb, var(--track) 80%, transparent) var(--deep-progress)); box-shadow: 0 0 0 1px rgba(255,255,255,.05), 0 0 65px rgba(246,185,67,.14), 0 30px 90px rgba(45,39,100,.17); animation: deep-breathe 4s ease-in-out infinite; }
+.break-mode .deep-ring { background: conic-gradient(from -90deg, var(--lavender-soft), var(--lavender) var(--deep-progress), color-mix(in srgb, var(--track) 80%, transparent) var(--deep-progress)); box-shadow: 0 0 70px rgba(131,121,238,.2), 0 30px 90px rgba(45,39,100,.14); }
+.deep-ring-core { width: 100%; height: 100%; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; background: radial-gradient(circle at 50% 38%, color-mix(in srgb, var(--card-solid) 96%, white 4%), color-mix(in srgb, var(--bg-soft) 92%, transparent)); box-shadow: inset 0 0 0 1px var(--line), inset 0 -28px 70px rgba(131,121,238,.07); }
+.deep-ring-core > span { color: var(--lavender); font-size: clamp(11px, 1.2vw, 14px); font-weight: 760; }
+.deep-ring-core strong { margin: clamp(14px, 2vh, 24px) 0 12px; font-size: clamp(64px, 9vh, 104px); line-height: .86; letter-spacing: -.055em; font-variant-numeric: tabular-nums; }
+.deep-ring-core small { max-width: 72%; color: var(--muted); font-size: clamp(8px, 1vw, 11px); font-weight: 800; letter-spacing: .15em; text-align: center; }
+.deep-task { max-width: min(620px, 90vw); display: grid; justify-items: center; gap: 5px; text-align: center; }
+.deep-task small { color: var(--muted); font-size: 9px; font-weight: 800; letter-spacing: .16em; }
+.deep-task strong { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: clamp(17px, 2vw, 23px); }
+.deep-task span { color: var(--muted); font-size: 11px; }
+.deep-controls { margin-top: clamp(18px, 2.5vh, 28px); display: flex; align-items: center; gap: 12px; }
+.deep-controls button { height: 52px; min-width: 154px; padding: 0 24px; display: inline-flex; align-items: center; justify-content: center; gap: 9px; border-radius: 999px; cursor: pointer; font-weight: 760; transition: transform .2s ease, box-shadow .2s ease, background .2s ease; }
+.deep-controls button:hover { transform: translateY(-2px); }
+.deep-primary { border: 0; color: #fff; background: linear-gradient(135deg, var(--lavender-soft), var(--lavender)); box-shadow: 0 15px 38px rgba(105,91,222,.32); }
+.deep-secondary { border: 1px solid var(--border); color: var(--muted); background: color-mix(in srgb, var(--card) 78%, transparent); backdrop-filter: blur(20px); }
+.deep-secondary:hover { color: var(--text); background: var(--elevated); }
+.deep-audio { width: min(760px, 100%); margin: 0 auto; padding: 13px 16px; display: grid; grid-template-columns: minmax(130px,.7fr) minmax(280px,1.5fr) minmax(170px,.8fr); align-items: center; gap: 14px; border: 1px solid var(--border); border-radius: 22px; background: color-mix(in srgb, var(--card) 82%, transparent); box-shadow: 0 18px 50px rgba(0,0,0,.1); backdrop-filter: blur(28px); }
+.deep-audio-heading { min-width: 0; display: grid; gap: 3px; }
+.deep-audio-heading > span { display: flex; align-items: center; gap: 7px; font-size: 12px; font-weight: 780; }
+.deep-audio-heading > span svg { color: var(--lavender); }
+.deep-audio-heading small { overflow: hidden; color: var(--muted); font-size: 8px; text-overflow: ellipsis; white-space: nowrap; }
+.deep-sounds { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+.deep-sounds button { min-width: 0; height: 42px; padding: 0 8px; display: flex; align-items: center; justify-content: center; gap: 6px; border: 1px solid transparent; border-radius: 12px; color: var(--muted); background: rgba(127,127,150,.07); cursor: pointer; transition: color .2s ease, background .2s ease, transform .2s ease; }
+.deep-sounds button:hover { color: var(--text); transform: translateY(-1px); }
+.deep-sounds button.active { border-color: rgba(131,121,238,.22); color: var(--lavender); background: rgba(131,121,238,.14); }
+.deep-sounds button span { overflow: hidden; font-size: 9px; font-weight: 720; text-overflow: ellipsis; white-space: nowrap; }
+.deep-volume { display: grid; grid-template-columns: 15px minmax(70px,1fr) 17px 30px; align-items: center; gap: 7px; color: var(--muted); }
+.deep-volume input { min-width: 0; accent-color: var(--lavender); }
+.deep-volume span { font-size: 9px; font-variant-numeric: tabular-nums; }
+.deep-volume.disabled { opacity: .42; }
+
 @keyframes rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes breathe { 50% { box-shadow: 0 0 46px rgba(246,185,67,.24); } }
 @keyframes sheen { 0%, 62% { transform: translateX(-110%); } 83%, 100% { transform: translateX(110%); } }
 @keyframes skeleton { to { background-position: -200% 0; } }
 @keyframes spin { to { transform: rotate(360deg); } }
+@keyframes deep-drift { to { transform: translate3d(5%, -4%, 0) scale(1.08); } }
+@keyframes deep-breathe { 50% { box-shadow: 0 0 0 1px rgba(255,255,255,.05), 0 0 84px rgba(131,121,238,.21), 0 34px 100px rgba(45,39,100,.2); } }
 
 @media (max-width: 1040px) {
   .app-shell { grid-template-columns: 82px minmax(0,1fr); }
@@ -572,6 +631,11 @@ button:focus-visible { outline: 2px solid var(--lavender); outline-offset: 3px; 
   .manager-task-row { grid-template-columns: 28px minmax(160px,1fr) auto; }
   .pomodoro-count { display: none; }
   .mobile-only { display: block; }
+  .deep-focus { padding: 18px; }
+  .deep-stage { padding-block: 26px 18px; }
+  .deep-ring-wrap { width: min(48vh, 460px, 78vw); }
+  .deep-audio { grid-template-columns: 1fr; width: min(520px, 100%); }
+  .deep-audio-heading { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
 }
 
 @media (max-width: 540px) {
@@ -630,6 +694,20 @@ button:focus-visible { outline: 2px solid var(--lavender); outline-offset: 3px; 
   .soundscape-grid { grid-template-columns: 1fr; }
   .focus-sound-heading { display: grid; }
   .focus-sound-heading > span { justify-self: start; }
+  .page-header-actions { align-items: flex-end; flex-direction: column-reverse; }
+  .deep-focus-trigger { width: 42px; padding: 0; justify-content: center; }
+  .deep-focus-trigger span, .deep-focus-trigger kbd { display: none; }
+  .deep-focus { min-height: 100dvh; padding: 15px 14px; overflow: auto; }
+  .deep-brand > span:nth-child(2), .deep-brand b, .deep-shortcut { display: none; }
+  .deep-window-actions button { width: 39px; height: 39px; }
+  .deep-stage { padding-block: 22px 16px; }
+  .deep-ring-wrap { width: min(42vh, 84vw); }
+  .deep-ring { padding: 13px; }
+  .deep-ring-core strong { font-size: clamp(52px, 18vw, 76px); }
+  .deep-controls { width: min(380px, 100%); }
+  .deep-controls button { min-width: 0; flex: 1; padding-inline: 16px; }
+  .deep-sounds button span { display: none; }
+  .deep-audio { position: relative; padding: 12px; border-radius: 18px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
