@@ -6,6 +6,7 @@ import {
   CalendarDays,
   Check,
   CloudRain,
+  CircleHelp,
   Focus,
   ListTodo,
   Maximize2,
@@ -35,7 +36,7 @@ import type { TimerState } from "@/lib/pomodoro-db";
 import type { RitmoPreferences, RitmoTheme } from "@/lib/preferences-db";
 import type { RitmoTask } from "@/lib/task-db";
 
-export type CommandSection = "focus" | "planner" | "tasks" | "statistics" | "settings";
+export type CommandSection = "focus" | "planner" | "tasks" | "statistics" | "settings" | "help";
 
 type Props = {
   open: boolean;
@@ -60,6 +61,7 @@ const navigation = [
   { section: "tasks", label: "Attività", description: "Organizza i tuoi task", icon: ListTodo, shortcut: "G A" },
   { section: "statistics", label: "Statistiche", description: "Consulta ritmo e cronologia", icon: BarChart3, shortcut: "G S" },
   { section: "settings", label: "Impostazioni", description: "Personalizza RITMO", icon: Settings, shortcut: "G I" },
+  { section: "help", label: "Aiuto", description: "Rivedi procedure e tutorial", icon: CircleHelp, shortcut: "G H" },
 ] as const;
 
 const themes: Array<{ value: RitmoTheme; label: string; icon: typeof Sun }> = [

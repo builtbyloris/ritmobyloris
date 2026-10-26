@@ -9,5 +9,5 @@ export default async function HomePage() {
   const metadata = user.user_metadata ?? {};
   const fullName = typeof metadata.full_name === "string" ? metadata.full_name : "";
   const firstName = fullName.trim().split(/\s+/)[0] || user.email?.split("@")[0] || "Utente";
-  return <RitmoApp userName={firstName} userEmail={user.email ?? "Account Google"} />;
+  return <RitmoApp userId={user.id} userName={firstName} userEmail={user.email ?? "Account Google"} />;
 }
