@@ -1,42 +1,31 @@
-# ritmobyloris
+# RITMO byloris
 
-Repository privata di RITMO, un Pomodoro personale con gestione attività, statistiche e preferenze.
+**Trova il tuo ritmo. Mantieni il focus.**
 
-## Struttura
+[RITMO byloris](https://ritmobyloris.vercel.app) è una web app dedicata alla produttività personale, progettata per organizzare le attività, gestire il tempo e rendere più consapevoli le sessioni di concentrazione.
 
-- `web/`: applicazione web corrente in Next.js, React e TypeScript, con Supabase Auth/Postgres e deploy Vercel.
-- `ritmobyloris/`: prototipo nativo macOS in SwiftUI, preservato senza modifiche.
-- `ritmobyloris.xcodeproj/`: progetto Xcode del prototipo macOS.
+Unisce la tecnica del Pomodoro, la pianificazione quotidiana e le statistiche in un'interfaccia essenziale e interattiva, adatta allo studio, al lavoro e ai progetti personali.
 
-La web app è il prodotto attivo. Il progetto SwiftUI resta disponibile come riferimento e non condivide dipendenze o dati con la web app.
+## Funzionalità
 
-## Avvio web
+- **Focus Timer** — Sessioni Pomodoro personalizzabili, pause programmate e attività collegate al timer.
+- **Deep Focus** — Una modalità immersiva che riduce le distrazioni e mette al centro l'attività corrente.
+- **Task Manager** — Creazione, organizzazione e completamento delle attività, con categorie e Pomodori stimati.
+- **Daily Planner** — Calendario, priorità, pianificazione dei Pomodori e organizzazione della giornata.
+- **Statistiche** — Visualizzazione del tempo dedicato al focus, delle sessioni completate e dei progressi nel tempo.
+- **Command Palette** — Ricerca e azioni rapide tramite `⌘K` o `Ctrl+K`.
+- **Personalizzazione** — Temi chiaro e scuro, durata delle sessioni, suoni ambientali e altre preferenze.
 
-Richiede Node.js 22.13 o successivo.
+## Esperienza e design
 
-```bash
-cd web
-cp .env.example .env.local
-npm ci
-npm run dev
-```
+RITMO è progettato per mantenere l'attenzione sulle attività importanti, senza sovraccaricare l'interfaccia. Layout responsive, transizioni fluide, microinterazioni e modalità di concentrazione dedicate rendono l'esperienza coerente su desktop e dispositivi mobili.
 
-Configurare in `.env.local` soltanto le variabili pubbliche Supabase indicate nell'esempio. File `.env`, token, chiavi private, dati locali e output generati sono esclusi da Git.
+Il progetto viene sviluppato per iterazioni successive, con attenzione alla semplicità d'uso, all'accessibilità e alla qualità dell'interazione.
 
-## Verifiche web
+## Tecnologie
 
-```bash
-cd web
-npm run lint
-npm test
-npx tsc --noEmit
-npm run build
-```
+La web app è realizzata con **Next.js, React, TypeScript, Tailwind CSS e Motion**, ed è pubblicata su **Vercel**.
 
-## Prototipo macOS
+---
 
-Richiede macOS 14+, Xcode 15+ e Swift 5.9+. Aprire `ritmobyloris.xcodeproj`, selezionare il target `ritmobyloris` ed eseguire su “My Mac”.
-
-## Privacy
-
-La repository deve rimanere privata. Non versionare file `.env`, token OAuth, chiavi Supabase `service_role`, esportazioni utente o database locali. Le migrazioni in `web/supabase/migrations/` contengono soltanto schema e policy versionabili; i segreti restano nei dashboard Supabase e Vercel.
+**Prova RITMO:** [ritmobyloris.vercel.app](https://ritmobyloris.vercel.app)
