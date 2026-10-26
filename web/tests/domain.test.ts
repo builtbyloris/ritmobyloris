@@ -4,6 +4,7 @@ import { buildAnalytics, percentChange } from "../lib/analytics.ts";
 import { nextBreakMode, timestampRemaining } from "../lib/pomodoro-engine.ts";
 import { normalizeFocusSound, normalizeFocusVolume } from "../lib/focus-audio.ts";
 import { isDeepFocusShortcut } from "../lib/deep-focus.ts";
+import { isCommandPaletteShortcut } from "../lib/command-palette.ts";
 import type { FocusSession } from "../lib/pomodoro-db.ts";
 import type { RitmoTask } from "../lib/task-db.ts";
 
@@ -84,4 +85,11 @@ test("Deep Focus usa una scorciatoia intenzionale e non intercetta la digitazion
   assert.equal(isDeepFocusShortcut({ key: "D", metaKey: false, ctrlKey: true, shiftKey: true }), true);
   assert.equal(isDeepFocusShortcut({ key: "d", metaKey: false, ctrlKey: false, shiftKey: true }), false);
   assert.equal(isDeepFocusShortcut({ key: "d", metaKey: true, ctrlKey: false, shiftKey: false }), false);
+});
+
+test("la Command Palette supporta le scorciatoie Mac e Windows", () => {
+  assert.equal(isCommandPaletteShortcut({ key: "k", metaKey: true, ctrlKey: false }), true);
+  assert.equal(isCommandPaletteShortcut({ key: "K", metaKey: false, ctrlKey: true }), true);
+  assert.equal(isCommandPaletteShortcut({ key: "k", metaKey: false, ctrlKey: false }), false);
+  assert.equal(isCommandPaletteShortcut({ key: "p", metaKey: true, ctrlKey: false }), false);
 });

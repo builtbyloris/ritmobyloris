@@ -9,6 +9,7 @@ import {
   Minimize2,
   Pause,
   Play,
+  Search,
   Square,
   Volume2,
   VolumeX,
@@ -33,6 +34,7 @@ type Props = {
   onPause: () => Promise<void>;
   onTerminate: () => Promise<void>;
   onUpdatePreferences: (changes: Partial<Omit<RitmoPreferences, "id">>) => Promise<RitmoPreferences | undefined>;
+  onOpenCommand: () => void;
   onExit: () => void;
 };
 
@@ -43,7 +45,7 @@ const sounds: Array<{ value: FocusSound; label: string; icon: typeof Waves }> = 
   { value: "waves", label: "Onde", icon: Waves },
 ];
 
-export function DeepFocusMode({ timer, time, progress, activeTask, preferences, onStart, onPause, onTerminate, onUpdatePreferences, onExit }: Props) {
+export function DeepFocusMode({ timer, time, progress, activeTask, preferences, onStart, onPause, onTerminate, onUpdatePreferences, onOpenCommand, onExit }: Props) {
   const reduceMotion = useReducedMotion();
   const [isFullscreen, setIsFullscreen] = useState(false);
   const isBreak = timer.mode !== "focus";
@@ -100,6 +102,7 @@ export function DeepFocusMode({ timer, time, progress, activeTask, preferences, 
       <div className="deep-brand"><span className="brand-mark" /><span>R I T M O</span><b>DEEP FOCUS</b></div>
       <div className="deep-window-actions">
         <span className="deep-shortcut" aria-label="Scorciatoia Deep Focus">⌘⇧D</span>
+        <button type="button" onClick={onOpenCommand} aria-label="Apri palette comandi" title="Comandi (⌘K)"><Search size={18} /></button>
         <button type="button" onClick={() => void toggleFullscreen()} aria-label={isFullscreen ? "Esci da schermo intero" : "Attiva schermo intero"} title={isFullscreen ? "Esci da schermo intero (Esc)" : "Schermo intero"}>{isFullscreen ? <Minimize2 size={18} /> : <Maximize2 size={18} />}</button>
         <button type="button" onClick={onExit} aria-label="Chiudi Deep Focus" title="Chiudi Deep Focus (Esc)"><X size={19} /></button>
       </div>

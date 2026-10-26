@@ -3,15 +3,16 @@
 import {
   BarChart3, CheckSquare2, ChevronRight, Circle, Clock3, Coffee, Focus,
   History, Leaf, ListTodo, LogOut, Moon, MoreHorizontal, Pause, Play, RotateCcw,
-  Maximize2, Settings, SkipForward, Sparkles, Square, Sun, Target, TimerReset,
+  Maximize2, Search, Settings, SkipForward, Sparkles, Square, Sun, Target, TimerReset,
 } from "lucide-react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { StatisticsDashboard } from "@/components/statistics/statistics-dashboard";
 import { SettingsDashboard } from "@/components/settings/settings-dashboard";
 import { TaskManager } from "@/components/tasks/task-manager";
 import { DeepFocusMode } from "@/components/focus/deep-focus-mode";
+import { CommandPalette } from "@/components/command-palette/command-palette";
 import { usePomodoro } from "@/hooks/use-pomodoro";
 import { useFocusAudio } from "@/hooks/use-focus-audio";
 import { usePreferences } from "@/hooks/use-preferences";
@@ -19,6 +20,7 @@ import { useTasks } from "@/hooks/use-tasks";
 import type { RitmoPreset, RitmoTheme } from "@/lib/preferences-db";
 import { unlockFocusAudio } from "@/lib/focus-audio";
 import { isDeepFocusShortcut } from "@/lib/deep-focus";
+import { isCommandPaletteShortcut } from "@/lib/command-palette";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 
 type Theme = RitmoTheme;
@@ -29,6 +31,8 @@ export function RitmoApp({ userName, userEmail }: { userName: string; userEmail:
   const reduceMotion = useReducedMotion();
   const [section, setSection] = useState<Section>("focus");
   const [deepFocus, setDeepFocus] = useState(false);
+  const [commandOpen, setCommandOpen] = useState(false);
+  const commandReturnFocus = useRef<HTMLElement | null>(null);
   const taskStore = useTasks();
   const preferenceStore = usePreferences();
   const pomodoro = usePomodoro(taskStore.reloadTasks, preferenceStore.preferences);
@@ -45,6 +49,18 @@ export function RitmoApp({ userName, userEmail }: { userName: string; userEmail:
       }
       setDeepFocus(false);
     })();
+  }, []);
+  const openCommands = useCallback(() => {
+    commandReturnFocus.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    setCommandOpen(true);
+  }, []);
+  const handleCommandOpenChange = useCallback((open: boolean) => {
+    setCommandOpen(open);
+    if (open) return;
+    const target = commandReturnFocus.current;
+    window.requestAnimationFrame(() => window.requestAnimationFrame(() => {
+      if (target?.isConnected) target.focus({ preventScroll: true });
+    }));
   }, []);
 
   useEffect(() => {
@@ -67,6 +83,15 @@ export function RitmoApp({ userName, userEmail }: { userName: string; userEmail:
     window.addEventListener("keydown", toggleDeepFocus);
     return () => window.removeEventListener("keydown", toggleDeepFocus);
   }, [deepFocus, exitDeepFocus, pomodoro.timer, preferenceStore.preferences]);
+  useEffect(() => {
+    const openCommandPalette = (event: KeyboardEvent) => {
+      if (!isCommandPaletteShortcut(event)) return;
+      event.preventDefault();
+      openCommands();
+    };
+    window.addEventListener("keydown", openCommandPalette);
+    return () => window.removeEventListener("keydown", openCommandPalette);
+  }, [openCommands]);
 
   async function selectTask(id: string) {
     await Promise.all([taskStore.setActiveTask(id), pomodoro.setTask(id)]);
@@ -80,6 +105,24 @@ export function RitmoApp({ userName, userEmail }: { userName: string; userEmail:
     const longBreakMinutes = preset === "25 / 5" ? 15 : preset === "50 / 10" ? 20 : preferenceStore.preferences?.longBreakMinutes ?? 18;
     await preferenceStore.updatePreferences({ preset, focusMinutes, shortBreakMinutes, longBreakMinutes });
   }
+  async function toggleTimer() {
+    const timer = pomodoro.timer;
+    if (!timer) return;
+    if (timer.status === "running") await pomodoro.pause();
+    else {
+      if (timer.mode === "focus") await unlockFocusAudio();
+      await pomodoro.start(activeTask?.id ?? null);
+    }
+  }
+  function toggleDeepFocus() {
+    setSection("focus");
+    if (deepFocus) exitDeepFocus();
+    else setDeepFocus(true);
+  }
+  function navigate(section: Section) {
+    if (deepFocus) exitDeepFocus();
+    setSection(section);
+  }
 
   async function signOut() {
     await getSupabaseBrowserClient().auth.signOut();
@@ -87,7 +130,7 @@ export function RitmoApp({ userName, userEmail }: { userName: string; userEmail:
     router.refresh();
   }
 
-  return <AnimatePresence mode="wait" initial={false}>{deepFocus && pomodoro.timer && preferenceStore.preferences ? <DeepFocusMode
+  return <><AnimatePresence mode="wait" initial={false}>{deepFocus && pomodoro.timer && preferenceStore.preferences ? <DeepFocusMode
     key="deep-focus"
     timer={pomodoro.timer}
     time={pomodoro.time}
@@ -98,9 +141,10 @@ export function RitmoApp({ userName, userEmail }: { userName: string; userEmail:
     onPause={pomodoro.pause}
     onTerminate={pomodoro.terminate}
     onUpdatePreferences={preferenceStore.updatePreferences}
+    onOpenCommand={openCommands}
     onExit={exitDeepFocus}
   /> : <main className="app-shell" key="dashboard">
-    <Sidebar section={section} onChange={setSection} userName={userName} userEmail={userEmail} onSignOut={signOut} />
+    <Sidebar section={section} onChange={setSection} onOpenCommand={openCommands} userName={userName} userEmail={userEmail} onSignOut={signOut} />
     <section className="workspace"><AnimatePresence mode="wait" initial={false}>
       {section === "focus" && <motion.div key="focus" initial={{ opacity: 0, y: reduceMotion ? 0 : 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: reduceMotion ? 0 : -6 }} transition={{ duration: reduceMotion ? 0 : .22 }}><FocusDashboard userName={userName} theme={theme} setTheme={(value) => void preferenceStore.updatePreferences({ theme: value })} dailyGoal={preferenceStore.preferences?.dailyGoal ?? 4} tasks={taskStore.tasks} activeTask={activeTask} pomodoro={pomodoro} onPresetChange={setPreset} onSelectTask={selectTask} onShowHistory={() => setSection("statistics")} onDeepFocus={() => setDeepFocus(true)} /></motion.div>}
       {section === "tasks" && <TaskManager key="tasks" tasks={taskStore.tasks} loading={taskStore.loading} error={taskStore.error} timerBusy={pomodoro.timer?.status !== "idle"} onCreate={taskStore.createTask} onUpdate={taskStore.updateTask} onToggle={taskStore.toggleTask} onDelete={taskStore.deleteTask} onStartFocus={startFocus} />}
@@ -108,12 +152,14 @@ export function RitmoApp({ userName, userEmail }: { userName: string; userEmail:
       {section === "settings" && <SettingsDashboard key="settings" preferences={preferenceStore.preferences} error={preferenceStore.error} notificationPermission={preferenceStore.notificationPermission} timer={pomodoro.timer} onUpdate={preferenceStore.updatePreferences} onRequestNotifications={preferenceStore.requestNotifications} onTestSound={preferenceStore.testSound} onPreviewFocusSound={preferenceStore.previewFocusSound} onExport={preferenceStore.exportData} />}
     </AnimatePresence></section>
     <AnimatePresence>{pomodoro.notice && <motion.button className="timer-toast" role="status" initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} onClick={pomodoro.clearNotice}>{pomodoro.notice}<span>Chiudi</span></motion.button>}</AnimatePresence>
-  </main>}</AnimatePresence>;
+  </main>}</AnimatePresence>
+    <CommandPalette open={commandOpen} onOpenChange={handleCommandOpenChange} section={section} deepFocus={deepFocus} tasks={taskStore.tasks} activeTask={activeTask} timer={pomodoro.timer} preferences={preferenceStore.preferences} onNavigate={navigate} onToggleTimer={toggleTimer} onToggleDeepFocus={toggleDeepFocus} onSelectTask={selectTask} onThemeChange={(value) => preferenceStore.updatePreferences({ theme: value })} onSoundChange={(value) => preferenceStore.updatePreferences({ focusSound: value })} />
+  </>;
 }
 
-function Sidebar({ section, onChange, userName, userEmail, onSignOut }: { section: Section; onChange: (section: Section) => void; userName: string; userEmail: string; onSignOut: () => Promise<void> }) {
+function Sidebar({ section, onChange, onOpenCommand, userName, userEmail, onSignOut }: { section: Section; onChange: (section: Section) => void; onOpenCommand: () => void; userName: string; userEmail: string; onSignOut: () => Promise<void> }) {
   const items = [["focus", Focus, "Focus"], ["tasks", ListTodo, "Attività"], ["statistics", BarChart3, "Statistiche"], ["settings", Settings, "Impostazioni"]] as const;
-  return <aside className="sidebar"><div className="brand" aria-label="Ritmo"><span className="brand-mark" /><span>R I T M O</span></div><nav aria-label="Navigazione principale">{items.map(([value, Icon, label]) => <button key={value} className={`nav-item ${section === value ? "active" : ""}`} onClick={() => onChange(value)} aria-label={label} aria-current={section === value ? "page" : undefined}><Icon size={20} /><span>{label}</span></button>)}</nav><div className="sidebar-note"><Leaf size={22} /><p>Mantieni<br />il tuo ritmo.</p></div><div className="account-card"><span className="account-avatar">{userName.slice(0, 1).toUpperCase()}</span><span><strong>{userName}</strong><small>{userEmail}</small></span><button onClick={() => void onSignOut()} title="Esci" aria-label="Esci dall’account"><LogOut size={17} /></button></div></aside>;
+  return <aside className="sidebar"><div className="brand" aria-label="Ritmo"><span className="brand-mark" /><span>R I T M O</span></div><nav aria-label="Navigazione principale">{items.map(([value, Icon, label]) => <button key={value} className={`nav-item ${section === value ? "active" : ""}`} onClick={() => onChange(value)} aria-label={label} aria-current={section === value ? "page" : undefined}><Icon size={20} /><span>{label}</span></button>)}<button className="nav-item command-nav-item" onClick={onOpenCommand} aria-label="Apri palette comandi"><Search size={20} /><span>Comandi</span><kbd>⌘K</kbd></button></nav><div className="sidebar-note"><Leaf size={22} /><p>Mantieni<br />il tuo ritmo.</p></div><div className="account-card"><span className="account-avatar">{userName.slice(0, 1).toUpperCase()}</span><span><strong>{userName}</strong><small>{userEmail}</small></span><button onClick={() => void onSignOut()} title="Esci" aria-label="Esci dall’account"><LogOut size={17} /></button></div></aside>;
 }
 
 type PomodoroStore = ReturnType<typeof usePomodoro>;

@@ -55,6 +55,7 @@
 }
 
 * { box-sizing: border-box; }
+.sr-only { position: absolute !important; width: 1px !important; height: 1px !important; padding: 0 !important; margin: -1px !important; overflow: hidden !important; clip: rect(0,0,0,0) !important; white-space: nowrap !important; border: 0 !important; }
 
 html, body { min-height: 100%; }
 
@@ -106,6 +107,8 @@ button:focus-visible { outline: 2px solid var(--lavender); outline-offset: 3px; 
 .nav-item { border: 0; background: transparent; border-radius: 15px; min-height: 50px; padding: 0 16px; display: flex; align-items: center; gap: 14px; color: var(--muted); cursor: pointer; transition: transform .22s ease, background .22s ease, color .22s ease; }
 .nav-item:hover { background: var(--elevated); color: var(--text); transform: translateX(2px); }
 .nav-item.active { background: linear-gradient(135deg, rgba(131, 121, 238, .20), rgba(131, 121, 238, .08)); color: var(--lavender); font-weight: 700; box-shadow: inset 0 0 0 1px rgba(131, 121, 238, .09); }
+.command-nav-item { margin-top: 9px; border-top: 1px solid var(--line); border-radius: 0 0 15px 15px; }
+.command-nav-item kbd { margin-left: auto; padding: 3px 6px; border: 1px solid var(--line); border-radius: 6px; color: var(--muted); background: color-mix(in srgb, var(--bg-soft) 74%, transparent); font-family: inherit; font-size: 8px; }
 
 .sidebar-note { margin-top: auto; border: 1px solid var(--border); border-radius: 21px; padding: 20px; color: var(--muted); background: linear-gradient(145deg, rgba(131, 121, 238, .10), rgba(246, 185, 67, .18)); }
 .sidebar-note svg { color: var(--lavender); }
@@ -584,6 +587,47 @@ button:focus-visible { outline: 2px solid var(--lavender); outline-offset: 3px; 
 .deep-volume span { font-size: 9px; font-variant-numeric: tabular-nums; }
 .deep-volume.disabled { opacity: .42; }
 
+/* Command Palette */
+body:has(.ritmo-command-dialog) [data-slot="dialog-overlay"] { background: rgba(6,8,16,.46); backdrop-filter: blur(8px); }
+.ritmo-command-dialog { position: fixed; top: 46%; left: 50%; z-index: 60; width: min(680px, calc(100vw - 28px)); max-width: 680px; max-height: min(760px, calc(100dvh - 40px)); display: block; translate: -50% -50%; overflow: hidden; padding: 0; border: 1px solid color-mix(in srgb, var(--border) 88%, var(--lavender) 12%); border-radius: 25px; color: var(--text); background: color-mix(in srgb, var(--card-solid) 94%, transparent); box-shadow: 0 36px 110px rgba(7,9,20,.38), 0 0 0 1px rgba(131,121,238,.05); backdrop-filter: blur(36px); outline: none; }
+.ritmo-command-dialog [data-slot="command"] { display: flex; flex-direction: column; color: var(--text); background: transparent; }
+.command-palette-head { min-height: 70px; padding: 15px 18px; display: grid; grid-template-columns: 39px minmax(0,1fr) auto; align-items: center; gap: 12px; border-bottom: 1px solid var(--line); background: linear-gradient(120deg, rgba(131,121,238,.08), rgba(246,185,67,.05)); }
+.command-orb { width: 39px; height: 39px; display: grid; place-items: center; border-radius: 13px; color: var(--lavender); background: rgba(131,121,238,.13); box-shadow: inset 0 0 0 1px rgba(131,121,238,.1); }
+.command-palette-head > div { min-width: 0; display: grid; gap: 2px; }
+.command-palette-head strong { font-size: 13px; }
+.command-palette-head small { overflow: hidden; color: var(--muted); font-size: 9px; text-overflow: ellipsis; white-space: nowrap; }
+.command-palette-head > kbd { padding: 6px 8px; border: 1px solid var(--line); border-radius: 8px; color: var(--muted); background: var(--elevated); font-family: inherit; font-size: 9px; font-weight: 760; }
+.ritmo-command-dialog [data-slot="command-input-wrapper"] { height: 62px; padding: 0 20px; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid var(--line); color: var(--lavender); }
+.ritmo-command-dialog [data-slot="command-input-wrapper"] svg { width: 20px; height: 20px; }
+.ritmo-command-dialog [data-slot="command-input"] { width: 100%; height: 60px; border: 0; outline: 0; color: var(--text); background: transparent; font-size: 16px; }
+.ritmo-command-dialog [data-slot="command-input"]::placeholder { color: var(--muted); }
+.ritmo-command-list { max-height: min(500px, calc(100dvh - 245px)); overflow-x: hidden; overflow-y: auto; padding: 8px; scroll-padding-block: 9px; overscroll-behavior: contain; }
+.ritmo-command-dialog [cmdk-group-heading] { padding: 12px 11px 7px; color: var(--muted); font-size: 9px; font-weight: 820; letter-spacing: .14em; text-transform: uppercase; }
+.ritmo-command-dialog [data-slot="command-group"] { padding: 0; }
+.ritmo-command-dialog [data-slot="command-item"] { min-height: 58px; padding: 8px 11px; display: flex; align-items: center; gap: 11px; border: 1px solid transparent; border-radius: 14px; color: var(--text); cursor: pointer; outline: none; transition: background .16s ease, border-color .16s ease, transform .16s ease; }
+.ritmo-command-dialog [data-slot="command-item"][data-selected="true"] { border-color: rgba(131,121,238,.14); background: linear-gradient(110deg, rgba(131,121,238,.15), rgba(131,121,238,.06)); transform: translateX(2px); }
+.ritmo-command-dialog [data-slot="command-item"][data-disabled="true"] { cursor: not-allowed; opacity: .42; }
+.command-icon { width: 37px; height: 37px; flex: 0 0 37px; display: grid; place-items: center; border-radius: 12px; color: var(--muted); background: var(--elevated); }
+.command-icon.lavender { color: var(--lavender); background: rgba(131,121,238,.13); }
+.command-icon.amber { color: var(--amber); background: rgba(246,185,67,.13); }
+.command-copy { min-width: 0; display: grid; gap: 3px; }
+.command-copy strong, .command-copy small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.command-copy strong { font-size: 12px; }
+.command-copy small { color: var(--muted); font-size: 9px; }
+.ritmo-command-dialog [data-slot="command-shortcut"] { margin-left: auto; color: var(--muted); font-size: 8px; letter-spacing: .06em; white-space: nowrap; }
+.command-current { margin-left: auto; display: inline-flex; align-items: center; gap: 4px; color: var(--lavender); font-size: 8px; font-weight: 760; white-space: nowrap; }
+.command-task-dot { width: 12px; height: 12px; margin-inline: 12px 13px; flex: 0 0 12px; border-radius: 50%; background: var(--lavender); box-shadow: 0 0 0 5px rgba(131,121,238,.1); }
+.command-task-dot.lavoro { background: var(--amber); box-shadow: 0 0 0 5px rgba(246,185,67,.11); }
+.command-task-dot.personale { background: #77c8ae; box-shadow: 0 0 0 5px rgba(119,200,174,.11); }
+.ritmo-command-dialog [data-slot="command-separator"] { height: 1px; margin: 6px 11px; background: var(--line); }
+.command-empty { min-height: 190px; display: grid; place-items: center; align-content: center; gap: 7px; color: var(--muted); text-align: center; }
+.command-empty svg { color: var(--lavender); }
+.command-empty strong { color: var(--text); font-size: 14px; }
+.command-empty span { max-width: 310px; font-size: 10px; line-height: 1.5; }
+.command-footer { min-height: 45px; padding: 0 18px; display: flex; align-items: center; gap: 18px; border-top: 1px solid var(--line); color: var(--muted); background: color-mix(in srgb, var(--bg-soft) 55%, transparent); font-size: 8px; }
+.command-footer span { display: inline-flex; align-items: center; gap: 4px; }
+.command-footer kbd { min-width: 21px; min-height: 20px; padding: 3px 5px; display: inline-grid; place-items: center; border: 1px solid var(--line); border-radius: 6px; color: var(--text); background: var(--card); font-family: inherit; font-size: 8px; box-shadow: 0 2px 5px rgba(0,0,0,.05); }
+
 @keyframes rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes breathe { 50% { box-shadow: 0 0 46px rgba(246,185,67,.24); } }
 @keyframes sheen { 0%, 62% { transform: translateX(-110%); } 83%, 100% { transform: translateX(110%); } }
@@ -597,6 +641,7 @@ button:focus-visible { outline: 2px solid var(--lavender); outline-offset: 3px; 
   .sidebar { padding-inline: 12px; }
   .brand { margin-inline: auto; }
   .brand > span:last-child, .nav-item span, .sidebar-note, .account-card > span:nth-child(2) { display: none; }
+  .command-nav-item kbd { display: none; }
   .account-card { grid-template-columns: 1fr; padding: 7px; justify-items: center; }
   .account-card .account-avatar { display: none; }
   .nav-item { justify-content: center; padding: 0; }
@@ -616,7 +661,8 @@ button:focus-visible { outline: 2px solid var(--lavender); outline-offset: 3px; 
   .app-shell { display: block; overflow: visible; }
   .sidebar { position: fixed; inset: auto 12px 12px; width: auto; height: 66px; padding: 8px; border: 1px solid var(--border); border-radius: 22px; box-shadow: var(--shadow); }
   .sidebar .brand, .sidebar-note, .account-card { display: none; }
-  .sidebar nav { height: 100%; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+  .sidebar nav { height: 100%; grid-template-columns: repeat(5, 1fr); gap: 6px; }
+  .command-nav-item { margin-top: 0; border-top: 0; border-radius: 15px; }
   .nav-item { min-height: 48px; }
   .nav-item span { display: none; }
   .workspace { height: auto; min-height: 100dvh; overflow: visible; padding: 26px 18px 104px; }
@@ -708,6 +754,14 @@ button:focus-visible { outline: 2px solid var(--lavender); outline-offset: 3px; 
   .deep-controls button { min-width: 0; flex: 1; padding-inline: 16px; }
   .deep-sounds button span { display: none; }
   .deep-audio { position: relative; padding: 12px; border-radius: 18px; }
+  .ritmo-command-dialog { top: 48%; width: calc(100vw - 18px); max-height: calc(100dvh - 18px); border-radius: 21px; }
+  .command-palette-head { min-height: 62px; padding: 12px 14px; }
+  .command-palette-head > kbd { display: none; }
+  .ritmo-command-dialog [data-slot="command-input-wrapper"] { height: 56px; padding-inline: 15px; }
+  .ritmo-command-dialog [data-slot="command-input"] { height: 54px; font-size: 15px; }
+  .ritmo-command-list { max-height: calc(100dvh - 200px); padding: 6px; }
+  .command-footer { justify-content: center; gap: 10px; }
+  .command-footer span:first-child { display: none; }
 }
 
 @media (prefers-reduced-motion: reduce) {
