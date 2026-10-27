@@ -40,4 +40,4 @@ Il Web App Manifest e le icone consentono l'installazione come web app nei brows
 
 ## Suoni Focus
 
-L'app include atmosfere sintetizzate localmente (pioggia, onde e rumore bruno), senza richieste a servizi esterni. Sono disponibili anteprima, volume dedicato, disattivazione e arresto automatico quando il Focus non è in esecuzione.
+L'app include tre soundscape originali generati per RITMO (Pioggia e temporale, Ambient e Foresta), serviti come asset locali senza richieste a servizi esterni. La riproduzione usa fade-in, fade-out e crossfade prima del riavvio della traccia. Sono disponibili anteprima, volume dedicato, disattivazione e arresto automatico quando il Focus non è in esecuzione. Provenienza e specifiche sono documentate in `public/audio/README.md`.

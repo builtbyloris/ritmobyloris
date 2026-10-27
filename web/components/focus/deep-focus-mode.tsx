@@ -1,16 +1,17 @@
 "use client";
 
 import {
-  AudioWaveform,
-  CloudRain,
   Coffee,
+  CloudRain,
   Focus,
   Maximize2,
   Minimize2,
   Pause,
   Play,
   Search,
+  Sparkles,
   Square,
+  Trees,
   Volume2,
   VolumeX,
   Waves,
@@ -19,6 +20,7 @@ import {
 import { motion, useReducedMotion } from "motion/react";
 import { useCallback, useEffect, useState } from "react";
 import { unlockFocusAudio } from "@/lib/focus-audio";
+import { unlockFeedbackAudio } from "@/lib/feedback";
 import type { FocusSound } from "@/lib/focus-audio";
 import type { TimerState } from "@/lib/pomodoro-db";
 import type { RitmoPreferences } from "@/lib/preferences-db";
@@ -27,6 +29,7 @@ import type { RitmoTask } from "@/lib/task-db";
 type Props = {
   timer: TimerState;
   time: string;
+  seconds: number;
   progress: number;
   activeTask?: RitmoTask;
   preferences: RitmoPreferences;
@@ -41,15 +44,16 @@ type Props = {
 const sounds: Array<{ value: FocusSound; label: string; icon: typeof Waves }> = [
   { value: "off", label: "Silenzio", icon: VolumeX },
   { value: "rain", label: "Pioggia", icon: CloudRain },
-  { value: "brown", label: "Rumore bruno", icon: AudioWaveform },
-  { value: "waves", label: "Onde", icon: Waves },
+  { value: "brown", label: "Ambient", icon: Sparkles },
+  { value: "waves", label: "Foresta", icon: Trees },
 ];
 
-export function DeepFocusMode({ timer, time, progress, activeTask, preferences, onStart, onPause, onTerminate, onUpdatePreferences, onOpenCommand, onExit }: Props) {
+export function DeepFocusMode({ timer, time, seconds, progress, activeTask, preferences, onStart, onPause, onTerminate, onUpdatePreferences, onOpenCommand, onExit }: Props) {
   const reduceMotion = useReducedMotion();
   const [isFullscreen, setIsFullscreen] = useState(false);
   const isBreak = timer.mode !== "focus";
   const isRunning = timer.status === "running";
+  const finalCountdown = !isBreak && isRunning && seconds >= 1 && seconds <= 5;
   const modeLabel = timer.mode === "longBreak" ? "Pausa lunga" : timer.mode === "shortBreak" ? "Pausa breve" : "Deep Focus";
 
   useEffect(() => {
@@ -80,7 +84,7 @@ export function DeepFocusMode({ timer, time, progress, activeTask, preferences, 
   async function toggleTimer() {
     if (isRunning) await onPause();
     else {
-      if (!isBreak) await unlockFocusAudio();
+      if (!isBreak) await Promise.all([unlockFocusAudio(), unlockFeedbackAudio()]);
       await onStart();
     }
   }
@@ -117,14 +121,14 @@ export function DeepFocusMode({ timer, time, progress, activeTask, preferences, 
 
       <div className="deep-ring-wrap">
         <motion.div
-          className="deep-ring"
+          className={`deep-ring ${finalCountdown ? "countdown-warning" : ""}`}
           animate={{ "--deep-progress": `${Math.max(.008, progress) * 360}deg` } as never}
           transition={{ duration: reduceMotion ? 0 : .35, ease: "linear" }}
         >
           <div className="deep-ring-core">
             <span>{isBreak ? modeLabel : `${timer.preset} · ${timer.focusMinutes} min`}</span>
             <strong aria-live="off">{time}</strong>
-            <small>{isRunning ? "TEMPO RIMANENTE" : timer.status === "paused" ? "RESPIRA. RIPRENDI QUANDO VUOI." : "PRONTO QUANDO VUOI"}</small>
+            <small aria-live={finalCountdown ? "polite" : "off"}>{finalCountdown ? `PAUSA TRA ${seconds}` : isRunning ? "TEMPO RIMANENTE" : timer.status === "paused" ? "RESPIRA. RIPRENDI QUANDO VUOI." : "PRONTO QUANDO VUOI"}</small>
           </div>
         </motion.div>
       </div>

@@ -31,7 +31,7 @@ const guides = [
 const reminders = [
   { icon: Clock3, title: "Il timer continua correttamente", copy: "RITMO usa timestamp reali: refresh, scheda inattiva e sospensione del Mac non accorciano la sessione." },
   { icon: CheckCircle2, title: "Conta solo ciò che completi", copy: "Reset e interruzioni anticipate non aggiungono Pomodori né minuti alle statistiche." },
-  { icon: Headphones, title: "Il suono è un supporto", copy: "Scegli pioggia, onde o rumore bruno a volume basso. Se distrae, torna al silenzio." },
+  { icon: Headphones, title: "Il suono è un supporto", copy: "Scegli Pioggia, Ambient o Foresta a volume basso. Se distrae, torna al silenzio." },
   { icon: Bell, title: "Le notifiche richiedono permesso", copy: "Il browser può avvisarti a fine sessione solo quando è autorizzato; non sono garantite a browser chiuso." },
 ] as const;
 

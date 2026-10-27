@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { motion, useReducedMotion } from "motion/react";
-import { AudioWaveform, Bell, Check, CloudRain, Clock3, Database, Download, Minus, Moon, Palette, Play, Plus, ShieldCheck, Sparkles, Sun, Target, Volume2, VolumeX, Waves } from "lucide-react";
+import { Bell, Check, Clock3, CloudRain, Database, Download, Minus, Moon, Palette, Play, Plus, ShieldCheck, Sparkles, Sun, Target, Trees, Volume2, VolumeX, Waves } from "lucide-react";
 import type { FocusSound } from "@/lib/focus-audio";
 import type { RitmoPreferences, RitmoPreset, RitmoTheme } from "@/lib/preferences-db";
 import type { TimerState } from "@/lib/pomodoro-db";
@@ -30,15 +30,10 @@ const presets: Array<{ label: RitmoPreset; focus: number; short: number; long: n
 
 const focusSounds: Array<{ value: FocusSound; label: string; description: string; icon: typeof Waves }> = [
   { value: "off", label: "Silenzio", description: "Nessun sottofondo", icon: VolumeX },
-  { value: "rain", label: "Pioggia", description: "Leggera e uniforme", icon: CloudRain },
-  { value: "brown", label: "Rumore bruno", description: "Profondo e avvolgente", icon: AudioWaveform },
-  { value: "waves", label: "Onde", description: "Lente e rilassanti", icon: Waves },
+  { value: "rain", label: "Pioggia e temporale", description: "Pioggia fitta e tuoni distanti", icon: CloudRain },
+  { value: "brown", label: "Ambient", description: "Pad caldo e note sospese", icon: Sparkles },
+  { value: "waves", label: "Foresta", description: "Vento lieve e richiami lontani", icon: Trees },
 ];
-
-const paletteGroups = [
-  { kind: "gradient", label: "Sfumati", description: "Luce ambientale e passaggi morbidi" },
-  { kind: "texture", label: "Texture", description: "Superfici discrete e materiche" },
-] as const;
 
 export function SettingsDashboard({ preferences, palette, error, notificationPermission, timer, onUpdate, onPaletteChange, onRequestNotifications, onTestSound, onPreviewFocusSound, onExport }: Props) {
   const reduceMotion = useReducedMotion();
@@ -60,7 +55,7 @@ export function SettingsDashboard({ preferences, palette, error, notificationPer
     try { const result = await onRequestNotifications(); setFeedback(result === "granted" ? "Notifiche autorizzate" : result === "denied" ? "Autorizzazione negata dal browser" : "Notifiche non supportate"); } finally { setBusy(false); }
   }
   async function testSound() { setBusy(true); try { setFeedback(await onTestSound() ? "Suono riprodotto" : "Audio non disponibile nel browser"); } finally { setBusy(false); } }
-  async function previewFocusSound() { setBusy(true); try { setFeedback(await onPreviewFocusSound() ? "Anteprima avviata per 4 secondi" : "Scegli un suono da ascoltare"); } finally { setBusy(false); } }
+  async function previewFocusSound() { setBusy(true); try { setFeedback(await onPreviewFocusSound() ? "Anteprima avviata per 8 secondi" : "Scegli un suono da ascoltare"); } finally { setBusy(false); } }
   async function exportData() { setBusy(true); try { const result = await onExport(); setFeedback(`Esportati ${result.tasks} task e ${result.sessions} sessioni`); } catch { setFeedback("Esportazione non riuscita"); } finally { setBusy(false); } }
 
   return <motion.div className="settings-page" initial={{ opacity: 0, y: reduceMotion ? 0 : 10 }} animate={{ opacity: 1, y: 0 }}>
@@ -80,7 +75,7 @@ export function SettingsDashboard({ preferences, palette, error, notificationPer
       </SettingsCard>
       <SettingsCard icon={Target} title="Obiettivo giornaliero" subtitle="Quante sessioni vuoi completare ogni giorno"><Stepper label="Sessioni giornaliere" description="Il tuo traguardo quotidiano" value={preferences.dailyGoal} unit="sessioni" min={1} max={20} onChange={(value) => update({ dailyGoal: value })} /></SettingsCard>
     </section><aside className="settings-aside">
-      <SettingsCard icon={Palette} title="Temi" subtitle="Scegli modalità e atmosfera di RITMO"><div className="theme-mode-label"><strong>Modalità</strong><small>Segui il sistema oppure forza chiaro o scuro</small></div><div className="appearance-tabs">{([ ["system", Sparkles, "Automatico"], ["light", Sun, "Chiaro"], ["dark", Moon, "Scuro"] ] as Array<[RitmoTheme, typeof Sun, string]>).map(([value, Icon, label]) => <button key={value} className={preferences.theme === value ? "active" : ""} aria-pressed={preferences.theme === value} onClick={() => update({ theme: value }, `Modalità ${label}`)}><Icon size={18} /><span>{label}</span></button>)}</div>{paletteGroups.map((group) => <div className="theme-palette-section" key={group.kind}><div className="theme-palette-label"><strong>{group.label}</strong><small>{group.description}</small></div><div className="theme-palette-grid">{RITMO_PALETTES.filter((item) => item.kind === group.kind).map((item) => <button key={item.value} className={palette === item.value ? "active" : ""} aria-pressed={palette === item.value} onClick={() => { onPaletteChange(item.value); setFeedback(`Tema ${item.label} applicato`); window.setTimeout(() => setFeedback(null), 2400); }}><span className={`theme-palette-preview ${item.kind} ${item.value}`} style={{ "--theme-a": item.colors[0], "--theme-b": item.colors[1], "--theme-bg": item.colors[2] } as React.CSSProperties}><i /><i /><i /></span><span><strong>{item.label}</strong><small>{item.description}</small></span>{palette === item.value ? <Check size={15} /> : null}</button>)}</div></div>)}<p className="theme-device-note">L’atmosfera viene ricordata su questo dispositivo; la modalità chiaro/scuro resta sincronizzata con il tuo account.</p></SettingsCard>
+      <SettingsCard icon={Palette} title="Temi" subtitle="Scegli modalità e atmosfera di RITMO"><div className="theme-mode-label"><strong>Modalità</strong><small>Segui il sistema oppure forza chiaro o scuro</small></div><div className="appearance-tabs">{([ ["system", Sparkles, "Automatico"], ["light", Sun, "Chiaro"], ["dark", Moon, "Scuro"] ] as Array<[RitmoTheme, typeof Sun, string]>).map(([value, Icon, label]) => <button key={value} className={preferences.theme === value ? "active" : ""} aria-pressed={preferences.theme === value} onClick={() => update({ theme: value }, `Modalità ${label}`)}><Icon size={18} /><span>{label}</span></button>)}</div><div className="theme-palette-section"><div className="theme-palette-label"><strong>Atmosfera</strong><small>Due identità visive, senza distrazioni</small></div><div className="theme-palette-grid">{RITMO_PALETTES.map((item) => <button key={item.value} className={palette === item.value ? "active" : ""} aria-pressed={palette === item.value} onClick={() => { onPaletteChange(item.value); setFeedback(`Tema ${item.label} applicato`); window.setTimeout(() => setFeedback(null), 2400); }}><span className={`theme-palette-preview ${item.kind} ${item.value}`} style={{ "--theme-a": item.colors[0], "--theme-b": item.colors[1], "--theme-bg": item.colors[2] } as React.CSSProperties}><i /><i /><i /></span><span><strong>{item.label}</strong><small>{item.description}</small></span>{palette === item.value ? <Check size={15} /> : null}</button>)}</div></div><p className="theme-device-note">L’atmosfera viene ricordata su questo dispositivo; la modalità chiaro/scuro resta sincronizzata con il tuo account.</p></SettingsCard>
       <SettingsCard icon={ShieldCheck} title="Dati e privacy" subtitle="I tuoi dati, protetti dal tuo account"><div className="privacy-box"><Database size={25} /><div><strong>Spazio personale sincronizzato</strong><p>Attività, sessioni e preferenze sono associate al tuo account Google e protette da regole di accesso per utente.</p></div></div><button className="export-button" disabled={busy} onClick={exportData}><Download size={17} /> Esporta dati JSON</button><small className="export-caption">Crea una copia locale leggibile e portabile</small></SettingsCard>
     </aside></div>
   </motion.div>;

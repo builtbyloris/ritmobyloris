@@ -1,12 +1,11 @@
 "use client";
 
 import {
-  AudioWaveform,
   BarChart3,
   CalendarDays,
   Check,
-  CloudRain,
   CircleHelp,
+  CloudRain,
   Focus,
   ListTodo,
   Maximize2,
@@ -17,6 +16,7 @@ import {
   Settings,
   Sparkles,
   Sun,
+  Trees,
   VolumeX,
   Waves,
 } from "lucide-react";
@@ -75,9 +75,9 @@ const themes: Array<{ value: RitmoTheme; label: string; icon: typeof Sun }> = [
 
 const sounds: Array<{ value: FocusSound; label: string; icon: typeof Waves }> = [
   { value: "off", label: "Sottofondo: silenzio", icon: VolumeX },
-  { value: "rain", label: "Sottofondo: pioggia", icon: CloudRain },
-  { value: "brown", label: "Sottofondo: rumore bruno", icon: AudioWaveform },
-  { value: "waves", label: "Sottofondo: onde", icon: Waves },
+  { value: "rain", label: "Sottofondo: pioggia e temporale", icon: CloudRain },
+  { value: "brown", label: "Sottofondo: ambient", icon: Sparkles },
+  { value: "waves", label: "Sottofondo: foresta", icon: Trees },
 ];
 
 export function CommandPalette({ open, onOpenChange, section, deepFocus, tasks, activeTask, timer, preferences, palette, onNavigate, onToggleTimer, onToggleDeepFocus, onSelectTask, onThemeChange, onPaletteChange, onSoundChange }: Props) {
@@ -118,7 +118,7 @@ export function CommandPalette({ open, onOpenChange, section, deepFocus, tasks, 
       <CommandSeparator />
       <CommandGroup heading="Aspetto e suoni">
         {themes.map(({ value, label, icon: Icon }) => <CommandItem key={value} value={`${label} aspetto`} onSelect={() => run(() => onThemeChange(value))}><span className="command-icon"><Icon size={17} /></span><span className="command-copy"><strong>{label}</strong><small>{value === "system" ? "Segue le impostazioni del dispositivo" : `Usa sempre l’aspetto ${value === "light" ? "chiaro" : "scuro"}`}</small></span>{preferences?.theme === value ? <span className="command-current"><Check size={13} /> Attivo</span> : null}</CommandItem>)}
-        {RITMO_PALETTES.map(({ value, kind, label, description }) => <CommandItem key={value} value={`Palette tema ${label} ${kind === "texture" ? "texture" : "sfumato"} ${description}`} onSelect={() => run(() => onPaletteChange(value))}><span className={`command-theme-swatch ${value}`} /><span className="command-copy"><strong>Tema {label}</strong><small>{kind === "texture" ? "Texture" : "Sfumato"} · {description}</small></span>{palette === value ? <span className="command-current"><Check size={13} /> Attivo</span> : null}</CommandItem>)}
+        {RITMO_PALETTES.map(({ value, kind, label, description }) => <CommandItem key={value} value={`Tema ${label} ${kind === "texture" ? "texture" : "sfumato"} ${description}`} onSelect={() => run(() => onPaletteChange(value))}><span className={`command-theme-swatch ${value}`} /><span className="command-copy"><strong>Tema {label}</strong><small>{kind === "texture" ? "Texture" : "Sfumato"} · {description}</small></span>{palette === value ? <span className="command-current"><Check size={13} /> Attivo</span> : null}</CommandItem>)}
         {sounds.map(({ value, label, icon: Icon }) => <CommandItem key={value} value={`${label} audio concentrazione`} onSelect={() => run(() => onSoundChange(value))}><span className="command-icon"><Icon size={17} /></span><span className="command-copy"><strong>{label}</strong><small>{value === "off" ? "Disattiva l’atmosfera durante il Focus" : "Riproduci durante le sessioni Focus"}</small></span>{preferences?.focusSound === value ? <span className="command-current"><Check size={13} /> Attivo</span> : null}</CommandItem>)}
       </CommandGroup>
     </CommandList>

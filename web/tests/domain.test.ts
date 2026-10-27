@@ -1,13 +1,13 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { buildAnalytics, percentChange } from "../lib/analytics.ts";
-import { nextBreakMode, timestampRemaining } from "../lib/pomodoro-engine.ts";
-import { normalizeFocusSound, normalizeFocusVolume } from "../lib/focus-audio.ts";
+import { isFinalFocusCountdown, nextBreakMode, timestampRemaining } from "../lib/pomodoro-engine.ts";
+import { FOCUS_SOUND_TRACKS, normalizeFocusSound, normalizeFocusVolume } from "../lib/focus-audio.ts";
 import { isDeepFocusShortcut } from "../lib/deep-focus.ts";
 import { isCommandPaletteShortcut } from "../lib/command-palette.ts";
 import { dateFromKey, localDateKey, shiftDateKey, weekAround } from "../lib/planner.ts";
 import { completeOnboarding, hasCompletedOnboarding, onboardingStorageKey } from "../lib/onboarding.ts";
-import { normalizePalette, paletteStorageKey, readPalette, writePalette } from "../lib/visual-theme.ts";
+import { normalizePalette, paletteStorageKey, readPalette, RITMO_PALETTES, writePalette } from "../lib/visual-theme.ts";
 import type { FocusSession } from "../lib/pomodoro-db.ts";
 import type { RitmoTask } from "../lib/task-db.ts";
 
@@ -38,6 +38,14 @@ test("il countdown usa il timestamp e non scende mai sotto zero", () => {
   assert.equal(timestampRemaining(10_000, 7_500, 99_000), 2_500);
   assert.equal(timestampRemaining(10_000, 10_001, 99_000), 0);
   assert.equal(timestampRemaining(null, 50_000, -1), 0);
+});
+
+test("il preavviso sonoro parte solo negli ultimi cinque secondi del Focus", () => {
+  assert.equal(isFinalFocusCountdown("focus", "running", 5), true);
+  assert.equal(isFinalFocusCountdown("focus", "running", 1), true);
+  assert.equal(isFinalFocusCountdown("focus", "running", 6), false);
+  assert.equal(isFinalFocusCountdown("focus", "paused", 3), false);
+  assert.equal(isFinalFocusCountdown("shortBreak", "running", 3), false);
 });
 
 test("le statistiche filtrano il periodo e deduplicano le sessioni per id", () => {
@@ -81,6 +89,9 @@ test("le preferenze audio normalizzano scelta e volume senza valori non validi",
   assert.equal(normalizeFocusSound("vento"), "off");
   assert.equal(normalizeFocusVolume(2), 1);
   assert.equal(normalizeFocusVolume(Number.NaN), .35);
+  assert.equal(FOCUS_SOUND_TRACKS.rain, "/audio/rain-thunder.mp3");
+  assert.equal(FOCUS_SOUND_TRACKS.brown, "/audio/ambient-drift.mp3");
+  assert.equal(FOCUS_SOUND_TRACKS.waves, "/audio/forest.mp3");
 });
 
 test("Deep Focus usa una scorciatoia intenzionale e non intercetta la digitazione normale", () => {
@@ -123,17 +134,18 @@ test("il tutorial iniziale viene ricordato separatamente per ogni utente", () =>
   assert.match(onboardingStorageKey("utente-a"), /:v1$/);
 });
 
-test("la palette visiva è validata e salvata separatamente per account", () => {
+test("la scelta dei temi espone soltanto Ritmo e Costellazione", () => {
   const values = new Map<string, string>();
   const storage = {
     getItem: (key: string) => values.get(key) ?? null,
     setItem: (key: string, value: string) => { values.set(key, value); },
   };
 
-  assert.equal(normalizePalette("ocean"), "ocean");
-  assert.equal(normalizePalette("neon"), "ritmo");
-  writePalette("utente-a", "canvas", storage);
-  assert.equal(readPalette("utente-a", storage), "canvas");
+  assert.deepEqual(RITMO_PALETTES.map(({ value }) => value), ["ritmo", "constellation"]);
+  assert.equal(normalizePalette("constellation"), "constellation");
+  assert.equal(normalizePalette("ocean"), "ritmo");
+  writePalette("utente-a", "constellation", storage);
+  assert.equal(readPalette("utente-a", storage), "constellation");
   assert.equal(readPalette("utente-b", storage), "ritmo");
   assert.match(paletteStorageKey("utente-a"), /:v1$/);
 });

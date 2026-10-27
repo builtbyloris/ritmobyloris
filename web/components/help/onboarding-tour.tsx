@@ -38,7 +38,7 @@ const steps = [
     description: "Nascondi tutto ciò che non serve, scegli un sottofondo e lascia al centro soltanto il timer e il prossimo passo.",
     icon: Headphones,
     accent: "amber",
-    points: ["Apri Deep Focus con ⌘⇧D o Ctrl+Shift+D", "Pioggia, onde e rumore bruno sono generati localmente"],
+    points: ["Apri Deep Focus con ⌘⇧D o Ctrl+Shift+D", "Pioggia, ambient e foresta sono tracce originali riprodotte localmente"],
   },
   {
     eyebrow: "4 · IMPARA DAL RITMO",

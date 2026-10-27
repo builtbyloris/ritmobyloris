@@ -60,36 +60,6 @@
   }
 }
 
-:root[data-palette="ocean"] {
-  --lavender: #4d8ef7; --lavender-soft: #8ebcff; --lavender-rgb: 77, 142, 247;
-  --amber: #45d2ca; --amber-soft: #8ce7df; --amber-rgb: 69, 210, 202;
-  --palette-bg-light: #edf6f9; --palette-soft-light: #e3f0f5; --palette-sidebar-light: rgba(240,248,251,.9); --palette-elevated-light: rgba(222,239,245,.88); --palette-track-light: #d8e8ee;
-  --palette-bg-dark: #06131c; --palette-soft-dark: #0b1d29; --palette-sidebar-dark: rgba(7,22,32,.94); --palette-elevated-dark: rgba(27,55,70,.8); --palette-track-dark: #203746;
-}
-:root[data-palette="graphite"] {
-  --lavender: #7d8ca8; --lavender-soft: #b3bed0; --lavender-rgb: 125, 140, 168;
-  --amber: #c2a976; --amber-soft: #ddcea8; --amber-rgb: 194, 169, 118;
-  --palette-bg-light: #f1f2f3; --palette-soft-light: #e7e9ec; --palette-sidebar-light: rgba(245,246,247,.9); --palette-elevated-light: rgba(229,232,235,.88); --palette-track-light: #dde0e4;
-  --palette-bg-dark: #0b0d10; --palette-soft-dark: #15181d; --palette-sidebar-dark: rgba(15,18,22,.94); --palette-elevated-dark: rgba(43,48,56,.8); --palette-track-dark: #2d323a;
-}
-:root[data-palette="paper"] {
-  --lavender: #677c99; --lavender-soft: #9fb0c6; --lavender-rgb: 103, 124, 153;
-  --amber: #d1b47c; --amber-soft: #e8d5ad; --amber-rgb: 209, 180, 124;
-  --palette-bg-light: #f4f1e9; --palette-soft-light: #ebe6da; --palette-sidebar-light: rgba(248,245,237,.92); --palette-elevated-light: rgba(237,232,220,.88); --palette-track-light: #e1dbcf;
-  --palette-bg-dark: #12110f; --palette-soft-dark: #1e1c18; --palette-sidebar-dark: rgba(22,20,17,.94); --palette-elevated-dark: rgba(52,48,40,.8); --palette-track-dark: #38342d;
-  --palette-texture-a: repeating-linear-gradient(0deg, rgba(255,255,255,.025) 0 1px, transparent 1px 4px);
-  --palette-texture-b: repeating-linear-gradient(93deg, rgba(87,70,45,.035) 0 1px, transparent 1px 9px);
-  --palette-texture-size-a: 100% 4px; --palette-texture-size-b: 9px 100%;
-}
-:root[data-palette="canvas"] {
-  --lavender: #946f8b; --lavender-soft: #c2a2bb; --lavender-rgb: 148, 111, 139;
-  --amber: #cab88f; --amber-soft: #e2d5b7; --amber-rgb: 202, 184, 143;
-  --palette-bg-light: #f4f0ed; --palette-soft-light: #ebe4e1; --palette-sidebar-light: rgba(248,244,241,.92); --palette-elevated-light: rgba(238,229,226,.88); --palette-track-light: #e3d9d6;
-  --palette-bg-dark: #151014; --palette-soft-dark: #211920; --palette-sidebar-dark: rgba(25,18,24,.94); --palette-elevated-dark: rgba(55,42,53,.8); --palette-track-dark: #3b3039;
-  --palette-texture-a: repeating-linear-gradient(45deg, rgba(255,255,255,.035) 0 1px, transparent 1px 6px);
-  --palette-texture-b: repeating-linear-gradient(-45deg, rgba(20,10,18,.045) 0 1px, transparent 1px 6px);
-  --palette-texture-size-a: 8px 8px; --palette-texture-size-b: 8px 8px;
-}
 :root[data-palette="constellation"] {
   --lavender: #667eea; --lavender-soft: #9cacf7; --lavender-rgb: 102, 126, 234;
   --amber: #82c7d9; --amber-soft: #b7e3eb; --amber-rgb: 130, 199, 217;
@@ -316,6 +286,8 @@ button:focus-visible { outline: 2px solid var(--lavender); outline-offset: 3px; 
 
 .timer-wrap { min-height: 395px; display: grid; place-items: center; }
 .timer-ring { --progress: 95deg; --ring-size: min(330px, 75vw); width: var(--ring-size); height: var(--ring-size); min-width: var(--ring-size); min-height: var(--ring-size); flex: 0 0 var(--ring-size); border-radius: 50%; padding: 17px; background: conic-gradient(from -90deg, var(--amber), var(--amber-soft) calc(var(--progress) * .45), var(--lavender-soft) var(--progress), var(--track) var(--progress)); box-shadow: 0 0 34px rgba(var(--amber-rgb),.16); animation: breathe 3.2s ease-in-out infinite; }
+.timer-ring.countdown-warning { box-shadow: 0 0 0 7px rgba(var(--amber-rgb),.12), 0 0 58px rgba(var(--amber-rgb),.38); animation: countdown-pulse 1s ease-out infinite; }
+.timer-ring.countdown-warning .timer-core small, .deep-ring.countdown-warning .deep-ring-core small { color: var(--amber); }
 .timer-core { width: 100%; height: 100%; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; background: radial-gradient(circle at 50% 42%, var(--card-solid), var(--bg-soft)); box-shadow: inset 0 0 0 1px var(--line), inset 0 -20px 50px rgba(var(--lavender-rgb),.05); }
 .mode-pill { display: flex; align-items: center; gap: 7px; border-radius: 999px; padding: 8px 13px; color: var(--lavender); background: rgba(var(--lavender-rgb),.12); font-size: 12px; font-weight: 700; }
 .timer-core strong { margin-top: 22px; font-size: clamp(48px, 5vw, 65px); line-height: .95; letter-spacing: -.045em; font-variant-numeric: tabular-nums; }
@@ -668,8 +640,6 @@ button:focus-visible { outline: 2px solid var(--lavender); outline-offset: 3px; 
 .theme-palette-grid small { font-size: 8px; }
 .theme-palette-preview { --theme-a: #8379ee; --theme-b: #f6b943; --theme-bg: #171c29; position: relative; width: 48px; height: 60px; overflow: hidden; display: block; border-radius: 11px; background: radial-gradient(circle at 20% 80%,var(--theme-b),transparent 42%),radial-gradient(circle at 80% 16%,var(--theme-a),transparent 46%),var(--theme-bg); box-shadow: inset 0 0 0 1px rgba(255,255,255,.1); }
 .theme-palette-preview.texture::before { content: ""; position: absolute; inset: 0; opacity: .62; }
-.theme-palette-preview.paper::before { background: repeating-linear-gradient(0deg,rgba(255,255,255,.18) 0 1px,transparent 1px 4px),repeating-linear-gradient(93deg,rgba(20,10,0,.15) 0 1px,transparent 1px 9px); }
-.theme-palette-preview.canvas::before { background: repeating-linear-gradient(45deg,rgba(255,255,255,.17) 0 1px,transparent 1px 6px),repeating-linear-gradient(-45deg,rgba(0,0,0,.17) 0 1px,transparent 1px 6px); }
 .theme-palette-preview.constellation::before { background: radial-gradient(circle,rgba(255,255,255,.8) 0 1px,transparent 1.4px); background-size: 9px 9px; }
 .theme-palette-preview i { position: absolute; right: 7px; left: 7px; height: 4px; border-radius: 99px; background: rgba(255,255,255,.72); }
 .theme-palette-preview i:first-child { top: 23px; }
@@ -706,6 +676,7 @@ button:focus-visible { outline: 2px solid var(--lavender); outline-offset: 3px; 
 .deep-status i { width: 4px; height: 4px; border-radius: 50%; background: var(--amber); }
 .deep-ring-wrap { width: min(54vh, 520px, 76vw); aspect-ratio: 1; margin: clamp(16px, 2.5vh, 28px) 0; display: grid; place-items: center; }
 .deep-ring { --deep-progress: 95deg; width: 100%; height: 100%; aspect-ratio: 1; border-radius: 50%; padding: clamp(14px, 2vw, 21px); background: conic-gradient(from -90deg, var(--amber), var(--amber-soft) calc(var(--deep-progress) * .44), var(--lavender-soft) var(--deep-progress), color-mix(in srgb, var(--track) 80%, transparent) var(--deep-progress)); box-shadow: 0 0 0 1px rgba(255,255,255,.05), 0 0 65px rgba(var(--amber-rgb),.14), 0 30px 90px rgba(45,39,100,.17); animation: deep-breathe 4s ease-in-out infinite; }
+.deep-ring.countdown-warning { animation: countdown-pulse 1s ease-out infinite; }
 .break-mode .deep-ring { background: conic-gradient(from -90deg, var(--lavender-soft), var(--lavender) var(--deep-progress), color-mix(in srgb, var(--track) 80%, transparent) var(--deep-progress)); box-shadow: 0 0 70px rgba(var(--lavender-rgb),.2), 0 30px 90px rgba(45,39,100,.14); }
 .deep-ring-core { width: 100%; height: 100%; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; background: radial-gradient(circle at 50% 38%, color-mix(in srgb, var(--card-solid) 96%, white 4%), color-mix(in srgb, var(--bg-soft) 92%, transparent)); box-shadow: inset 0 0 0 1px var(--line), inset 0 -28px 70px rgba(var(--lavender-rgb),.07); }
 .deep-ring-core > span { color: var(--lavender); font-size: clamp(11px, 1.2vw, 14px); font-weight: 760; }
@@ -769,10 +740,6 @@ body:has(.ritmo-command-dialog) [data-slot="dialog-overlay"] { background: rgba(
 .command-task-dot.lavoro { background: var(--amber); box-shadow: 0 0 0 5px rgba(var(--amber-rgb),.11); }
 .command-task-dot.personale { background: #77c8ae; box-shadow: 0 0 0 5px rgba(119,200,174,.11); }
 .command-theme-swatch { width: 34px; height: 34px; margin: 0 2px; flex: 0 0 34px; border-radius: 11px; background: linear-gradient(135deg,#8379ee 0 48%,#f6b943 49% 72%,#171c29 73%); box-shadow: inset 0 0 0 1px rgba(255,255,255,.1); }
-.command-theme-swatch.ocean { background: linear-gradient(135deg,#4d8ef7 0 48%,#45d2ca 49% 72%,#091a26 73%); }
-.command-theme-swatch.graphite { background: linear-gradient(135deg,#7d8ca8 0 48%,#c2a976 49% 72%,#14171d 73%); }
-.command-theme-swatch.paper { background: repeating-linear-gradient(0deg,rgba(255,255,255,.16) 0 1px,transparent 1px 4px),linear-gradient(135deg,#677c99 0 48%,#d1b47c 49% 72%,#1a1a18 73%); }
-.command-theme-swatch.canvas { background: repeating-linear-gradient(45deg,rgba(255,255,255,.14) 0 1px,transparent 1px 5px),repeating-linear-gradient(-45deg,rgba(0,0,0,.13) 0 1px,transparent 1px 5px),linear-gradient(135deg,#946f8b 0 48%,#cab88f 49% 72%,#1d171c 73%); }
 .command-theme-swatch.constellation { background: radial-gradient(circle,rgba(255,255,255,.65) 0 1px,transparent 1.4px),linear-gradient(135deg,#667eea,#0c1020 72%); background-size: 8px 8px,auto; }
 .ritmo-command-dialog [data-slot="command-separator"] { height: 1px; margin: 6px 11px; background: var(--line); }
 .command-empty { min-height: 190px; display: grid; place-items: center; align-content: center; gap: 7px; color: var(--muted); text-align: center; }
@@ -862,6 +829,7 @@ body:has(.ritmo-command-dialog) [data-slot="dialog-overlay"] { background: rgba(
 @keyframes spin { to { transform: rotate(360deg); } }
 @keyframes deep-drift { to { transform: translate3d(5%, -4%, 0) scale(1.08); } }
 @keyframes deep-breathe { 50% { box-shadow: 0 0 0 1px rgba(255,255,255,.05), 0 0 84px rgba(var(--lavender-rgb),.21), 0 34px 100px rgba(45,39,100,.2); } }
+@keyframes countdown-pulse { 0% { transform: scale(1); } 28% { transform: scale(1.018); box-shadow: 0 0 0 9px rgba(var(--amber-rgb),.14), 0 0 72px rgba(var(--amber-rgb),.42); } 100% { transform: scale(1); } }
 
 @media (max-width: 1040px) {
   .app-shell { grid-template-columns: 82px minmax(0,1fr); }
@@ -970,8 +938,6 @@ body:has(.ritmo-command-dialog) [data-slot="dialog-overlay"] { background: rgba(
   .stepper-row { min-height: 82px; }
   .stepper-row > div:first-child { max-width: 48%; }
   .settings-presets { grid-template-columns: 1fr; }
-  .appearance-tabs button span { display: none; }
-  .theme-palette-grid { grid-template-columns: 1fr; }
   .volume-control { grid-template-columns: 16px minmax(80px,1fr) 16px 34px; }
   .volume-control button { grid-column: 1 / -1; justify-self: end; }
   .soundscape-grid { grid-template-columns: 1fr; }
