@@ -14,6 +14,7 @@ import {
 } from "@/lib/pomodoro-db";
 import { isFinalFocusCountdown, timestampRemaining } from "@/lib/pomodoro-engine";
 import { playCompletionSound, playCountdownTick, sendCompletionNotification, unlockFeedbackAudio } from "@/lib/feedback";
+import { startFocusAudio, stopFocusAudio } from "@/lib/focus-audio";
 import type { RitmoPreferences } from "@/lib/preferences-db";
 
 const clampMinutes = (value: number, fallback: number) => Number.isFinite(value) ? Math.min(180, Math.max(1, Math.round(value))) : fallback;
@@ -130,10 +131,14 @@ export function usePomodoro(onTaskChange: () => Promise<unknown>, preferences: R
 
   const start = useCallback(async (taskId?: string | null) => {
     if (!timer || timer.status === "running") return;
-    if (preferences?.soundEnabled) await unlockFeedbackAudio();
+    const feedbackTask = preferences?.soundEnabled ? unlockFeedbackAudio() : Promise.resolve(false);
+    const focusAudioTask = timer.mode === "focus" && preferences?.focusSound && preferences.focusSound !== "off"
+      ? startFocusAudio(preferences.focusSound, preferences.focusSoundVolume)
+      : Promise.resolve(false);
+    const [, focusAudioStarted] = await Promise.all([feedbackTask, focusAudioTask]);
     const timestamp = Date.now();
     const isFreshFocus = timer.mode === "focus" && timer.status === "idle";
-    await save({
+    const saved = await save({
       ...timer,
       status: "running",
       endsAt: timestamp + timer.remainingMs,
@@ -142,7 +147,8 @@ export function usePomodoro(onTaskChange: () => Promise<unknown>, preferences: R
       cycleId: isFreshFocus ? crypto.randomUUID() : timer.cycleId,
       updatedAt: timestamp,
     });
-  }, [preferences?.soundEnabled, save, timer]);
+    if (!saved && focusAudioStarted) stopFocusAudio();
+  }, [preferences, save, timer]);
 
   const pause = useCallback(async () => {
     if (!timer || timer.status !== "running") return;

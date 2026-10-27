@@ -21,8 +21,6 @@ import { useFocusAudio } from "@/hooks/use-focus-audio";
 import { usePreferences } from "@/hooks/use-preferences";
 import { useTasks } from "@/hooks/use-tasks";
 import type { RitmoPreset, RitmoTheme } from "@/lib/preferences-db";
-import { unlockFocusAudio } from "@/lib/focus-audio";
-import { unlockFeedbackAudio } from "@/lib/feedback";
 import { isDeepFocusShortcut } from "@/lib/deep-focus";
 import { isCommandPaletteShortcut } from "@/lib/command-palette";
 import { completeOnboarding, hasCompletedOnboarding } from "@/lib/onboarding";
@@ -127,10 +125,8 @@ export function RitmoApp({ userId, userName, userEmail }: { userId: string; user
     await Promise.all([taskStore.setActiveTask(id), pomodoro.setTask(id)]);
   }
   async function startFocus(id: string) {
-    if (preferenceStore.preferences?.soundEnabled) void unlockFeedbackAudio();
-    await selectTask(id);
     setSection("focus");
-    await pomodoro.start(id);
+    await Promise.all([taskStore.setActiveTask(id), pomodoro.start(id)]);
   }
   async function setPreset(preset: RitmoPreset, focusMinutes: number, shortBreakMinutes: number) {
     const longBreakMinutes = preset === "25 / 5" ? 15 : preset === "50 / 10" ? 20 : preferenceStore.preferences?.longBreakMinutes ?? 18;
@@ -140,10 +136,7 @@ export function RitmoApp({ userId, userName, userEmail }: { userId: string; user
     const timer = pomodoro.timer;
     if (!timer) return;
     if (timer.status === "running") await pomodoro.pause();
-    else {
-      if (timer.mode === "focus") await Promise.all([unlockFocusAudio(), unlockFeedbackAudio()]);
-      await pomodoro.start(activeTask?.id ?? null);
-    }
+    else await pomodoro.start(activeTask?.id ?? null);
   }
   function toggleDeepFocus() {
     setSection("focus");
@@ -228,7 +221,7 @@ function FocusDashboard({ userName, theme, setTheme, dailyGoal, tasks, activeTas
         <div className="card-topline"><span className="status-label">{isBreak ? <Coffee size={17} /> : <Focus size={17} />} {statusLabel}</span><span className="cycle-label">Ciclo {timer.completedFocusCount % timer.longBreakEvery + 1} di {timer.longBreakEvery}</span></div>
         {!isBreak && <><div className="preset-tabs" aria-label="Preset Pomodoro">{presetOptions.map((item) => <button key={item.label} className={item.label === timer.preset ? "active" : ""} disabled={timer.status !== "idle"} onClick={() => onPresetChange(item.label, item.focus, item.pause)}>{item.label}</button>)}</div>{timer.preset === "Personalizzato" && timer.status === "idle" && <div className="custom-duration"><label>Focus <input aria-label="Minuti Focus personalizzato" type="number" min="1" max="180" value={customFocusValue} onChange={(event) => setCustomFocus(Number(event.target.value))} onBlur={() => onPresetChange("Personalizzato", customFocusValue, customBreakValue)} /> min</label><label>Pausa <input aria-label="Minuti pausa personalizzata" type="number" min="1" max="60" value={customBreakValue} onChange={(event) => setCustomBreak(Number(event.target.value))} onBlur={() => onPresetChange("Personalizzato", customFocusValue, customBreakValue)} /> min</label></div>}</>}
         <div className="timer-wrap"><motion.div className={`timer-ring ${finalCountdown ? "countdown-warning" : ""}`} animate={{ "--progress": `${Math.max(0.008, pomodoro.progress) * 360}deg` } as never} transition={{ duration: reduceMotion ? 0 : .35, ease: "linear" }}><div className="timer-core"><span className="mode-pill">{isBreak ? <Coffee size={15} /> : <Clock3 size={15} />}{isBreak ? (timer.mode === "longBreak" ? `Pausa lunga · ${timer.longBreakMinutes} min` : `Pausa breve · ${timer.shortBreakMinutes} min`) : `${timer.preset} · ${timer.focusMinutes} min`}</span><strong>{pomodoro.time}</strong><small aria-live={finalCountdown ? "polite" : "off"}>{finalCountdown ? `PAUSA TRA ${pomodoro.seconds}` : timer.status === "running" ? "TEMPO RIMANENTE" : timer.status === "paused" ? "TIMER IN PAUSA" : "PRONTO QUANDO VUOI"}</small></div></motion.div></div>
-        <div className="timer-actions"><button className="button primary" onClick={() => { if (timer.status !== "running" && !isBreak) void unlockFocusAudio(); return timer.status === "running" ? pomodoro.pause() : pomodoro.start(activeTask?.id ?? null); }}>{timer.status === "running" ? <Pause size={18} fill="currentColor" /> : <Play size={18} fill="currentColor" />}{timer.status === "running" ? "Pausa" : timer.status === "paused" ? "Riprendi" : isBreak ? "Inizia pausa" : "Avvia focus"}</button><button className="button secondary" onClick={pomodoro.reset}><RotateCcw size={17} /> Reset</button>{timer.status !== "idle" && <button className="button tertiary" onClick={pomodoro.terminate}><Square size={15} fill="currentColor" /> Termina</button>}{isBreak && <button className="button tertiary" onClick={pomodoro.skipBreak}><SkipForward size={17} /> Salta pausa</button>}</div>
+        <div className="timer-actions"><button className="button primary" onClick={() => timer.status === "running" ? pomodoro.pause() : pomodoro.start(activeTask?.id ?? null)}>{timer.status === "running" ? <Pause size={18} fill="currentColor" /> : <Play size={18} fill="currentColor" />}{timer.status === "running" ? "Pausa" : timer.status === "paused" ? "Riprendi" : isBreak ? "Inizia pausa" : "Avvia focus"}</button><button className="button secondary" onClick={pomodoro.reset}><RotateCcw size={17} /> Reset</button>{timer.status !== "idle" && <button className="button tertiary" onClick={pomodoro.terminate}><Square size={15} fill="currentColor" /> Termina</button>}{isBreak && <button className="button tertiary" onClick={pomodoro.skipBreak}><SkipForward size={17} /> Salta pausa</button>}</div>
       </motion.article>
       <article className="card active-task-card"><div className="task-icon amber"><CheckSquare2 size={21} /></div>{activeTask ? <><div className="active-task-copy"><small>Attività collegata</small><strong>{activeTask.title}</strong><span>{activeTask.category}</span></div><div className="session-progress"><small>{activeTask.completedPomodoros} di {activeTask.estimatedPomodoros} pomodori</small><div>{Array.from({ length: Math.min(activeTask.estimatedPomodoros, 8) }, (_, dot) => <i key={dot} className={dot < activeTask.completedPomodoros ? "done" : ""} />)}</div></div></> : <div className="active-task-copy"><small>Attività collegata</small><strong>Focus libero</strong><span>Nessuna attività selezionata</span></div>}<ChevronRight className="chevron" size={18} /></article>
     </section><aside className="secondary-column">

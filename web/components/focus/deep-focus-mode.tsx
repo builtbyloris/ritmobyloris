@@ -19,8 +19,7 @@ import {
 } from "lucide-react";
 import { motion, useReducedMotion } from "motion/react";
 import { useCallback, useEffect, useState } from "react";
-import { unlockFocusAudio } from "@/lib/focus-audio";
-import { unlockFeedbackAudio } from "@/lib/feedback";
+import { startFocusAudio } from "@/lib/focus-audio";
 import type { FocusSound } from "@/lib/focus-audio";
 import type { TimerState } from "@/lib/pomodoro-db";
 import type { RitmoPreferences } from "@/lib/preferences-db";
@@ -83,14 +82,11 @@ export function DeepFocusMode({ timer, time, seconds, progress, activeTask, pref
 
   async function toggleTimer() {
     if (isRunning) await onPause();
-    else {
-      if (!isBreak) await Promise.all([unlockFocusAudio(), unlockFeedbackAudio()]);
-      await onStart();
-    }
+    else await onStart();
   }
 
   async function chooseSound(sound: FocusSound) {
-    if (sound !== "off" && isRunning && !isBreak) await unlockFocusAudio();
+    if (sound !== "off" && isRunning && !isBreak) void startFocusAudio(sound, preferences.focusSoundVolume);
     await onUpdatePreferences({ focusSound: sound });
   }
 

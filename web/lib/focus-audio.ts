@@ -7,6 +7,7 @@ type TrackSlot = {
 };
 
 type ActiveSound = {
+  sound: Exclude<FocusSound, "off">;
   context: AudioContext;
   master: GainNode;
   slots: [TrackSlot, TrackSlot];
@@ -122,7 +123,11 @@ export async function startFocusAudio(sound: FocusSound, volume: number) {
   if (sound === "off") { stopFocusAudio(); return false; }
   const context = audioContext();
   if (!context) return false;
-  if (context.state === "suspended") await context.resume();
+  if (activeSound?.sound === sound) {
+    setFocusAudioVolume(volume);
+    return true;
+  }
+  const resumeTask = context.state === "suspended" ? context.resume() : Promise.resolve();
   stopFocusAudio();
 
   const master = context.createGain();
@@ -134,7 +139,7 @@ export async function startFocusAudio(sound: FocusSound, volume: number) {
   master.gain.setValueAtTime(0, context.currentTime);
   master.gain.linearRampToValueAtTime(normalizedVolume(volume), context.currentTime + 1.2);
 
-  const current: ActiveSound = { context, master, slots, currentSlot: 0, crossfading: false, interval: 0, crossfadeTimeout: null };
+  const current: ActiveSound = { sound, context, master, slots, currentSlot: 0, crossfading: false, interval: 0, crossfadeTimeout: null };
   activeSound = current;
   current.interval = window.setInterval(() => {
     if (activeSound !== current || current.crossfading) return;
@@ -144,7 +149,8 @@ export async function startFocusAudio(sound: FocusSound, volume: number) {
   }, 250);
 
   try {
-    await slots[0].element.play();
+    const playTask = slots[0].element.play();
+    await Promise.all([resumeTask, playTask]);
     return true;
   } catch {
     if (activeSound === current) activeSound = null;

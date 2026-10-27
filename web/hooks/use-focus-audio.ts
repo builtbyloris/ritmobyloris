@@ -19,7 +19,8 @@ export function useFocusAudio(timer: TimerState | null, preferences: RitmoPrefer
   useEffect(() => {
     if (shouldPlay) void startFocusAudio(sound, volumeRef.current);
     else stopFocusAudio();
-    return stopFocusAudio;
   }, [shouldPlay, sound]);
+
+  useEffect(() => stopFocusAudio, []);
 
 }
